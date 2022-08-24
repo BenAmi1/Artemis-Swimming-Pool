@@ -88,62 +88,60 @@ namespace PoolPlanLogic
             return false;
         }
 
+        public List<int> indexesOfQualifiedInstructors(eSwimStyle i_RequestedSwimStyle)
+        {
+            List<int> indexesOfQualifiedInstructors = new List<int>();
+
+            for (int instructorIndex = 0; instructorIndex < r_Instructors.Count; instructorIndex++)
+            {
+                foreach (eSwimStyle swimStyle in r_Instructors[instructorIndex].InstructorsSwimStyles)
+                {
+                    if (swimStyle == i_RequestedSwimStyle) // instructor is professionally fit
+                    {
+                        indexesOfQualifiedInstructors.Add(instructorIndex);
+                        break; // does it fine?
+                    }
+                }
+            }
+
+        }
+
         public bool CreateNewLessonAndAssignStudent(Student i_CurrentStudent, eLessonMode i_LessonMode)
         {
             // dont forget to update the lessons list in pool management class
             // try to find the instructor that already works that day
 
             List<eWeekDay> daysCurrentInstructorWorks;
+            List<int> qualifiedInstructorsIndex;
             int indexOfAvailableInstructor = 0; // to correct
             Tuple<bool, eWeekDay, int> result;
             Instructor currentInstructor;
-            bool vacantInstructorFound = false;
-            for (int instructorIndex = 0; instructorIndex < r_Instructors.Count; instructorIndex++)
+            int numberOfTriesToAssign = 0;
+
+            qualifiedInstructorsIndex = indexesOfQualifiedInstructors(i_CurrentStudent.RequestedSwimStyle);
+
+            for (int instructorIndex = 0; instructorIndex < qualifiedInstructorsIndex.Count; instructorIndex++)
             {
-                currentInstructor = r_Instructors[instructorIndex]; // check if by value or  ref cause it need to be modified
-                foreach (eSwimStyle swimStyle in currentInstructor.InstructorsSwimStyles)
+                currentInstructor = r_Instructors[instructorIndex]; // check if ok (modified by value or ref...)
+                daysCurrentInstructorWorks = currentInstructor.DaysCurrentInstructorBookedLesson();
+                if (daysCurrentInstructorWorks.Count != 0 || 1 == numberOfTriesToAssign) 
                 {
-                    if (swimStyle == i_CurrentStudent.RequestedSwimStyle) // instructor is professionally fit
+                    result = currentInstructor.InstructorCanBookThisLesson(i_LessonMode, daysCurrentInstructorWorks); // need to be in amother place, change this loop --> coliision between this list and the if
+                    if (result.Item1 == true) // success! instructor can take lesson in day he works!
                     {
-                        // lets see if this instructor already works that day and available to get this lesson
-                        daysCurrentInstructorWorks = currentInstructor.DaysCurrentInstructorBookedLesson();
-                        if(daysCurrentInstructorWorks.Count == 0)
-                        {
-                            if(vacantInstructorFound == true)
-                            {
-                                continue;
-                            }
-                            //if he doesn't work in any day: can he book this lesson?
-                            result = currentInstructor.InstructorCanBookThisLesson(i_LessonMode, daysCurrentInstructorWorks); // need to be in amother place, change this loop --> coliision between this list and the if
-                            if(result.Item1 == true)
-                            {
-                                vacantInstructorFound = true;
-                            }
-                            else
-                            {
-                                continue;
-                            }
-
-                        }    
-                        else // this instructor already works, lets try to assign the lesson for him!
-                        {
-                            
-                        }
+                        // make shiboots!
                     }
-
                 }
-
-            }
-            foreach (Instructor currentInstructor in r_Instructors)
-            {
+                if(instructorIndex == qualifiedInstructorsIndex.Count -1)//unable to assign instructor to his busy day
                 {
-                    
+                    numberOfTriesToAssign++;
+                    instructorIndex = 0; // redo the loop - but now try to assign any instructor!
+                    if (2 == numberOfTriesToAssign) 
+                    {
+                        return false;
+                    }
                 }
-                        
             }
-
-
-            return false;
         }
 
         

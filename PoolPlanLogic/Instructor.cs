@@ -52,6 +52,7 @@ namespace PoolPlanLogic
 
         public Tuple<bool, eWeekDay, int> InstructorCanBookThisLesson(eLessonMode i_LessonMode, List<eWeekDay> i_Days)
         {
+            //fix this problem here
             bool instructorAlreadyBookedForSomeDays = i_Days.Count != 0;
             Tuple<bool, eWeekDay, int> result;
 
