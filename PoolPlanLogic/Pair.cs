@@ -37,12 +37,17 @@ namespace PoolPlanLogic
                 i_RangeToCheck.EndTime > m_StartTime;
         }
 
+        public int AmountOfMinutesInTimeRange()
+        {
+            return m_StartTime / 100 != m_StartTime / 100 ? m_EndTime - m_StartTime - 40 : m_EndTime - m_StartTime;
+        }
+
         public bool HasTimeRangeForLesson(eLessonMode i_LessonMode)
         {
             int lengthOfThisLesson = -1;
-            int AmountOfMinutesAvailableInThisTimeRange = m_StartTime - m_StartTime - 40; //100 - 60 = 40
+            int AmountOfMinutesAvailableInThisTimeRange = AmountOfMinutesInTimeRange();
 
-            if(i_LessonMode == eLessonMode.Group)
+            if (i_LessonMode == eLessonMode.Group)
             {
                 lengthOfThisLesson = PoolManagement.k_LenghOfGroupLesson;
             }

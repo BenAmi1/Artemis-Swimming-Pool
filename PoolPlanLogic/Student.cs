@@ -26,7 +26,6 @@ namespace PoolPlanLogic
         public void AddLessonToStudent(Lesson i_NewLessonToStudent) // what happen if i take down the ref
         {
             m_RegisteredLessons.Add(i_NewLessonToStudent);
-            m_RegisteredLessons[0].AddStudentToLesson(this);
         }
 
         public string StudentFirstName
@@ -55,12 +54,10 @@ namespace PoolPlanLogic
             return m_StudentLessonMode.Count == 2;
         }
 
-        public eLessonMode GetStudentSecondPriority()
+        public eLessonMode StudentSecondPriority
         {
-            return m_StudentLessonMode[1]; // return the second priority of student
+            get { return m_StudentLessonMode[1]; } // return the second priority of student
         }
-
-
-
+     
     }
 }

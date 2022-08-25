@@ -9,6 +9,7 @@ namespace PoolPlanLogic
     public enum eLessonMode
     {
         Group,
-        Private
+        Private,
+        None
     }
 }

@@ -9,7 +9,9 @@ namespace PoolPlanLogic
     public class Lesson
     {
         private readonly eWeekDay r_LessonDay;
-        private readonly Pair r_LessonAppointedTime;
+        private Pair m_LessonAppointedTime; 
+        private readonly int r_lessonLength;
+        private readonly Pair r_LessonInTimeRange;
         private readonly eSwimStyle r_LessonStyle;
         private readonly eLessonMode r_LessonMode;
         private readonly string r_LessonInstructor;
@@ -18,11 +20,23 @@ namespace PoolPlanLogic
         public Lesson(eWeekDay i_Day, Pair i_Time, eSwimStyle i_Style, eLessonMode i_Mode, string i_InstructorName)
         {
             r_LessonDay = i_Day;
-            r_LessonAppointedTime = i_Time;
+            r_LessonInTimeRange = i_Time;
             r_LessonStyle = i_Style;
             r_LessonMode = i_Mode;
             r_LessonInstructor = i_InstructorName;
             r_ParticipatingStudentS = new List<Student>(); // init only, adding students - in another function
+            r_lessonLength = setLessonLength();
+            // whats with the lessons hour
+        }
+
+        private int setLessonLength()
+        {
+            return r_LessonMode == eLessonMode.Private ? 45 : 60;
+        }
+
+        public int LengthOfLesson
+        {
+            get { return r_lessonLength; }
         }
 
         public void AddStudentToLesson(Student i_RegisteredStudent)
@@ -35,9 +49,15 @@ namespace PoolPlanLogic
             get { return r_LessonDay; }
         }
 
+        public Pair LessonTimeRange
+        {
+            get { return r_LessonInTimeRange; }
+        }
+
         public Pair LessonHour
         {
-            get {return r_LessonAppointedTime; }
+            get {return m_LessonAppointedTime; }
+            set { m_LessonAppointedTime = value; }
         }
 
         public eSwimStyle LessonSwimStyle

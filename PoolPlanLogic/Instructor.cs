@@ -25,16 +25,52 @@ namespace PoolPlanLogic
             m_InstructorsLessonsThisWeek = createLessonsScheduluForInstructor(); // sets an array of array of Lessons
         }
 
+        public void AddLessonToInstructor(Lesson i_NewLesson, int i_TimeRangeIndex)
+        {
+            int lessonDayIndex = (int)i_NewLesson.LessonDay;
+            int startOfLesson = m_InstructorAvailability[lessonDayIndex][i_TimeRangeIndex].StartTime;
+            int endOfLesson;
+            if (m_InstructorsLessonsThisWeek[lessonDayIndex] == null)
+            {
+                m_InstructorsLessonsThisWeek[lessonDayIndex] = new List<Lesson>();
+            }
+            m_InstructorsLessonsThisWeek[lessonDayIndex].Add(i_NewLesson);
+
+            endOfLesson= updateAvailabilityToInstructor(lessonDayIndex, i_TimeRangeIndex, i_NewLesson.LengthOfLesson);
+            i_NewLesson.LessonHour = new Pair(startOfLesson, endOfLesson); // set The Hour of the lesson
+        }
+
+        private int updateAvailabilityToInstructor(int i_DayIndex, int i_TimeRangeIndex, int i_LessonLength)
+        {
+            int startTime = m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].StartTime;
+            if(startTime + i_LessonLength >= ((startTime / 100)*100)+60)
+            {
+                // we pass to the next hour
+                m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].StartTime = startTime + i_LessonLength + 40;
+            }
+            else
+            {
+                m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].StartTime = startTime + i_LessonLength;
+            }
+            if(m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].StartTime == m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].EndTime)
+            {
+                m_InstructorAvailability[i_DayIndex].RemoveAt(i_TimeRangeIndex); // we filled the whole hour
+            }
+            return m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].StartTime = startTime + i_LessonLength;
+        }
+
         public void AddAvailability(eWeekDay i_AvailableDay, Pair i_RangeOfHours)
         {
             Pair newAvailableHoursToAdd = new Pair(i_RangeOfHours.StartTime, i_RangeOfHours.EndTime);
-            if(m_InstructorAvailability[(int)i_AvailableDay] == null) // this day haven't been initialized
+            int dayIndex = (int)i_AvailableDay;
+
+            if (m_InstructorAvailability[dayIndex] == null) // this day haven't been initialized
             {
-                m_InstructorAvailability[(int)i_AvailableDay] = new List<Pair>();
+                m_InstructorAvailability[dayIndex] = new List<Pair>();
             }
 
-            m_InstructorAvailability[(int)i_AvailableDay].Add(newAvailableHoursToAdd);
-            m_InstructorAvailability[(int)i_AvailableDay] = m_InstructorAvailability[(int)i_AvailableDay].OrderBy(p => p.StartTime).ToList();
+            m_InstructorAvailability[dayIndex].Add(newAvailableHoursToAdd);
+            m_InstructorAvailability[dayIndex] = m_InstructorAvailability[dayIndex].OrderBy(p => p.StartTime).ToList();
         }
 
         public List<eWeekDay> DaysCurrentInstructorBookedLesson()
@@ -52,35 +88,34 @@ namespace PoolPlanLogic
 
         public Tuple<bool, eWeekDay, int> InstructorCanBookThisLesson(eLessonMode i_LessonMode, List<eWeekDay> i_Days)
         {
-            //fix this problem here
-            bool instructorAlreadyBookedForSomeDays = i_Days.Count != 0;
             Tuple<bool, eWeekDay, int> result;
+            int currentDayIndex = -1;
 
-            for (int day = 0; day < PoolManagement.k_AmountOfDaysInWeek; day++)
+            foreach (eWeekDay currentDay in i_Days)
             {
-                if(instructorAlreadyBookedForSomeDays && i_Days.Contains((eWeekDay)day))
+                currentDayIndex = (int)currentDay;
+                
+                if (m_InstructorAvailability[currentDayIndex] == null) // the worker in not in the pool that day
                 {
                     continue;
                 }
-                if (m_InstructorAvailability[day] == null) // check in necessary
+                for (int TimeRange = 0; TimeRange < m_InstructorAvailability[currentDayIndex].Count; TimeRange++)
                 {
-                    continue;
-                }
-                for (int TimeRange = 0; TimeRange < m_InstructorAvailability[day].Count; TimeRange++)
-                {
-                    // are there 45/60 minutes that day
-                    // ensuring that the lesson will be early as possible today!
-                    if(m_InstructorAvailability[day][TimeRange].HasTimeRangeForLesson(i_LessonMode)) // success
+                    // are there 45/60 minutes aviailable that day
+                    // ensuring that the lesson will be early as possible today due to the sorted time-ranges
+                    if (m_InstructorAvailability[currentDayIndex][TimeRange].HasTimeRangeForLesson(i_LessonMode)) // success
                     {
-                        result = new Tuple<bool, eWeekDay, int>( true, (eWeekDay)day, TimeRange);
+                        // to add: and if pool is vaccant also!
+                        result = new Tuple<bool, eWeekDay, int>(true, (eWeekDay)currentDayIndex, TimeRange);
                         return result;
                     }
                 }
-                
             }
-            result = new Tuple<bool, eWeekDay, int>(false, (eWeekDay)0, 0);
+
+            result = new Tuple<bool, eWeekDay, int>(false, (eWeekDay)0, 0); // not found!
             return result;
         }
+
 
         public Pair IsAvailableToBookALesson(eWeekDay i_Day, Pair i_HoursRangeToCheck)
         {
@@ -112,38 +147,15 @@ namespace PoolPlanLogic
             get { return r_InstructorName; }
         }
 
-        public List<eSwimStyle> InstructorsSwimStyles
+        public  List<List<Pair>> InstructorAvailability
         {
-            get { return m_InstructorStyles; }
+            get { return m_InstructorAvailability; }
         }
 
 
-        public void c()
+        public List<eSwimStyle> InstructorsSwimStyles
         {
-            m_InstructorAvailability = new List<List<Pair>>(); // must in c'tor
-
-            m_InstructorAvailability.Add(new List<Pair>()); // needs to be done 7 times anyway in the c'tor
-            m_InstructorAvailability.Add(new List<Pair>()); // 
-            m_InstructorAvailability.Add(new List<Pair>());
-            // where m_InstructorAvailability[k].count == 0 ---> this instructor now works in this day.
-            // need to create another one with hours of lessons. 
-            // create lesson class and each instructor must have a list (size 7) of lessons
-            // and isAvailable function see if the instructor already have a lesson in this day
-            // shibuts student to courses is first of all by the instuctor ability to learn the specific style
-            // afterwards we try to put them in a group that already exist, else - we open another group for them
-            // if they want a private lesson - it's in the last priority - we first want to create as many groups as possible
-            // each student will have a field of -- booked, and to which class
-            //
-
-            m_InstructorAvailability[(int)eWeekDay.Sunday] = new List<Pair>(); 
-            m_InstructorAvailability[(int)(eWeekDay.Sunday)].Add(new Pair(800, 900));
-
-            m_InstructorAvailability[(int)eWeekDay.Tuesday] = new List<Pair>();
-            m_InstructorAvailability[(int)(eWeekDay.Tuesday)].Add(new Pair(800, 2000));
-
-            //m_AvailableHours = new List<Pair>();
-            //m_AvailableHours.Add(new Pair(3,5));
-
+            get { return m_InstructorStyles; }
         }
 
         private List<List<Pair>> createAvailabilityBoardForInstructor()

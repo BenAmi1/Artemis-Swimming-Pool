@@ -16,4 +16,6 @@ namespace PoolPlanLogic
         Friday,
         Saturday
     }
+
+    
 }

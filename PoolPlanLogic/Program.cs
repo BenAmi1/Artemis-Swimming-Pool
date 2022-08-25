@@ -17,14 +17,17 @@ namespace PoolPlanLogic
             swimStyle.Add(eSwimStyle.Chest);
             swimStyle.Add(eSwimStyle.Butterfly);
             swimStyle.Add(eSwimStyle.Hatira);
+
             List<List<eLessonMode>> lessonModes = new List<List<eLessonMode>>();
             List<eLessonMode> lm1 = new List<eLessonMode>();
             lm1.Add(eLessonMode.Private);
             lm1.Add(eLessonMode.Group);
             List<eLessonMode> lm2 = new List<eLessonMode>();
             lm2.Add(eLessonMode.Private);
+            lm2.Add(eLessonMode.None);
             List<eLessonMode> lm3 = new List<eLessonMode>();
             lm3.Add(eLessonMode.Group);
+            lm3.Add(eLessonMode.None);
             List<eLessonMode> lm4 = new List<eLessonMode>();
             lm4.Add(eLessonMode.Group);
             lm4.Add(eLessonMode.Private);
