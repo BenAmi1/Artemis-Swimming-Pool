@@ -17,13 +17,13 @@ namespace PoolPlanLogic
             m_EndTime = i_EndTime;
         }
 
-        public int StartTime
+        public int Start
         {
             get { return m_StartTime; }
             set { m_StartTime = value; }
         }
 
-        public int EndTime
+        public int End
         {
             get { return m_EndTime; }
             set { m_EndTime = value; }
@@ -31,15 +31,20 @@ namespace PoolPlanLogic
 
         public bool InRange(Pair i_RangeToCheck)
         {
-            return i_RangeToCheck.StartTime >= m_StartTime &&
-                i_RangeToCheck.StartTime < m_EndTime &&
-                i_RangeToCheck.EndTime <= m_EndTime &&
-                i_RangeToCheck.EndTime > m_StartTime;
+            return i_RangeToCheck.Start >= m_StartTime &&
+                i_RangeToCheck.Start < m_EndTime &&
+                i_RangeToCheck.End <= m_EndTime &&
+                i_RangeToCheck.End > m_StartTime;
         }
 
         public int AmountOfMinutesInTimeRange()
         {
-            return m_StartTime / 100 != m_StartTime / 100 ? m_EndTime - m_StartTime - 40 : m_EndTime - m_StartTime;
+            if(m_StartTime / 100 != m_EndTime / 100)
+            {
+                return (m_EndTime - m_StartTime) - (40 * ((m_EndTime / 100) - (m_StartTime / 100)));
+            }
+            else
+                return m_EndTime - m_StartTime;
         }
 
         public bool HasTimeRangeForLesson(eLessonMode i_LessonMode)
@@ -57,7 +62,6 @@ namespace PoolPlanLogic
             }
 
             return AmountOfMinutesAvailableInThisTimeRange >= lengthOfThisLesson ? true : false;
-
         }
     }
 }

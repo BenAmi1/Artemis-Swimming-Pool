@@ -39,116 +39,128 @@ namespace PoolPlanLogic
             }
         }
 
-        public void AssignWeekAgenda()
+        public void AssignFirstPriorities()
         {
-            AssignGroupLessons();
-            assignPrivateLessons();
+            eLessonMode lessonMode = eLessonMode.Group;
+            for (int iteration = 1; iteration <= 2; iteration++)
+            {
+                foreach (Student currentStudent in r_RegisteredStudents)
+                {
+                    if (currentStudent.StudentFirstPriority == lessonMode)// first: groups lesson, afterward: privates
+                    {
+                        if (lessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(currentStudent))
+                            continue;
+                        else
+                            CreateNewLessonAndAssignStudent(currentStudent, lessonMode);
+                    }
+                }
+                lessonMode = eLessonMode.Private;
+            }
         }
 
-        public void AssignGroupLessons()
+        public void HandleConflicts(List<Student> i_Conflicted)
         {
-            // to check about the priorities!!
-
-            bool assignSucceed = false;
-            foreach (Student currentStudent in r_RegisteredStudents)
+            List<List<int>> gaps = new List<List<int>>();
+            for (int i = 0; i < 2; i++) // init gap list
             {
-                if (currentStudent.StudentFirstPriority == eLessonMode.Group)
+                gaps[i] = new List<int>();
+                foreach (eSwimStyle style in (eSwimStyle[])Enum.GetValues(typeof(eSwimStyle)))
                 {
-                    if (AttemptToAssignToExistentLesson(currentStudent))
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        assignSucceed=CreateNewLessonAndAssignStudent(currentStudent, eLessonMode.Group);
-                        //return popup;
-                    }
-                }
-                else
-                {
-                    assignSucceed=CreateNewLessonAndAssignStudent(currentStudent, eLessonMode.Private);
-                    // return popup
+                    gaps[i][(int)style] = new int();
                 }
             }
+            
+            foreach (Student student in i_Conflicted)
+            {
+                if(student.StudentFirstPriority == eLessonMode.Group)
+                    gaps[(int)eLessonMode.Group][(int)student.RequestedSwimStyle]++;
+                else
+                    gaps[(int)eLessonMode.Private][(int)student.RequestedSwimStyle]++;
+            }
+        }
 
+        public List<Student> AssignSecondPriorities()
+        {
+            eLessonMode lessonMode = eLessonMode.Group;
+            List<Student> conflicts = new List<Student>();
+            for (int iteration = 1; iteration <= 2; iteration++)
+            {
+                foreach (Student currentStudent in r_RegisteredStudents)
+                {
+                    if (currentStudent.StudentSecondPriority == lessonMode && currentStudent.IsBooked())
+                    {
+                        if (lessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(currentStudent))
+                            continue;
+                        else
+                        {
+                            if (!CreateNewLessonAndAssignStudent(currentStudent, lessonMode))
+                                conflicts.Add(currentStudent);
+                        }
+                    }
+                }
+                lessonMode = eLessonMode.Private;
+            }
+            return conflicts;
+        }
+
+        public void AssignWeekAgenda()
+        {
+            List<Student> conflictsOfStudents;
+            AssignFirstPriorities();
+            conflictsOfStudents=AssignSecondPriorities();
+            if(conflictsOfStudents.Count>0)
+            {
+                HandleConflicts(conflictsOfStudents);
+            }
         }
 
         public bool CreateNewLessonAndAssignStudent(Student i_CurrentStudent, eLessonMode i_LessonMode)
         {
             // dont forget to update the lessons list in pool management class
-            List<eWeekDay> daysCurrentInstructorWorks;
-            List<eWeekDay> allDaysOfWeek;
+            List<eWeekDay> daysCurrentInstructorWorks, allDaysOfWeek;
             List<int> qualifiedInstructorsIndex;
             Tuple<bool, eWeekDay, int> result;
             Instructor currentInstructor;
             eLessonMode lessonMode = i_CurrentStudent.StudentFirstPriority;
 
-            for (int tryOutToAssign = 1; tryOutToAssign <= 2; tryOutToAssign++)
+            qualifiedInstructorsIndex = IndexesOfQualifiedInstructors(i_CurrentStudent.RequestedSwimStyle);
+            for (int instructorIndex = 0; instructorIndex < qualifiedInstructorsIndex.Count; instructorIndex++)
             {
-                qualifiedInstructorsIndex = IndexesOfQualifiedInstructors(i_CurrentStudent.RequestedSwimStyle);
-                for (int instructorIndex = 0; instructorIndex < qualifiedInstructorsIndex.Count; instructorIndex++)
+                currentInstructor = r_Instructors[instructorIndex]; // check if ok (modified by value or ref...)
+                daysCurrentInstructorWorks = currentInstructor.DaysCurrentInstructorBookedLesson();
+                if (daysCurrentInstructorWorks.Count != 0)
                 {
-                    currentInstructor = r_Instructors[instructorIndex]; // check if ok (modified by value or ref...)
-                    daysCurrentInstructorWorks = currentInstructor.DaysCurrentInstructorBookedLesson();
-                    if (daysCurrentInstructorWorks.Count != 0)
-                    {
-                        // does this 'result' can be modified
-                        result = currentInstructor.InstructorCanBookThisLesson(lessonMode, daysCurrentInstructorWorks); // need to be in amother place, change this loop --> coliision between this list and the if
-                        if (result.Item1 == true) // success! instructor can take lesson in day he works!
-                        {
-                            CreateNewLesson(result, currentInstructor, i_CurrentStudent, lessonMode);
-
-                            // considering that the lesson percise hours changed in addlessonToInstructor (to check), now
-                            // we combine it in the pools schedule
-
-                            // to add student to this lesson
-                            // to add this lesson to the list of lesson if instructor
-                            // to add this lesson to the general schedule
-                        }
-                        // make shiboots!
-                    
-                        // return -- must!
-                    }
-                }
-
-
-                allDaysOfWeek = GetAllWeekDays();
-                for (int instructorIndex = 0; instructorIndex < qualifiedInstructorsIndex.Count; instructorIndex++)
-                {
-                    currentInstructor = r_Instructors[instructorIndex]; // check if ok (modified by value or ref...)
-                    result = currentInstructor.InstructorCanBookThisLesson(lessonMode, allDaysOfWeek); // need to be in amother place, change this loop --> coliision between this list and the if
+                    // does this 'result' can be modified
+                    result = currentInstructor.InstructorCanBookThisLesson(lessonMode, daysCurrentInstructorWorks); // need to be in amother place, change this loop --> coliision between this list and the if
                     if (result.Item1 == true) // success! instructor can take lesson in day he works!
                     {
-                        // make shiboots!
-                        // return -- must!
-                    }
-                }
-
-
-                if (i_CurrentStudent.StudentSecondPriority != eLessonMode.None && tryOutToAssign == 1) // lets try to assingn second priority
-                {
-                    lessonMode = i_CurrentStudent.StudentSecondPriority;
-                    if (lessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(i_CurrentStudent))
-                    {
+                        CreateNewLesson(result, currentInstructor, i_CurrentStudent, lessonMode);
                         return true;
                     }
                 }
-                else
+            }
+
+            allDaysOfWeek = GetAllWeekDays();
+            for (int instructorIndex = 0; instructorIndex < qualifiedInstructorsIndex.Count; instructorIndex++)
+            {
+                currentInstructor = r_Instructors[instructorIndex]; // check if ok (modified by value or ref...)
+                result = currentInstructor.InstructorCanBookThisLesson(lessonMode, allDaysOfWeek); // need to be in amother place, change this loop --> coliision between this list and the if
+                if (result.Item1 == true) // success! instructor can take lesson in day he works!
                 {
-                    return false; // return pop-up
+                    CreateNewLesson(result, currentInstructor, i_CurrentStudent, lessonMode);
+                    return true;
                 }
             }
 
-            return false; // return pop up
-            // not Found!
+            return false; 
         }
 
         public void CreateNewLesson(Tuple<bool, eWeekDay, int> i_LessonData, Instructor i_Instructor, Student i_Student, eLessonMode i_LessonMode)
         {
             Lesson newLesson;
             newLesson = new Lesson(i_LessonData.Item2,
-                        i_Instructor.InstructorAvailability[(int)i_LessonData.Item2][i_LessonData.Item3],
-                        i_Student.RequestedSwimStyle, i_LessonMode, i_Instructor.InstructorName);
+                                   i_Instructor.InstructorAvailability[(int)i_LessonData.Item2][i_LessonData.Item3],
+                                   i_Student.RequestedSwimStyle, i_LessonMode, i_Instructor.InstructorName);
             i_Student.AddLessonToStudent(newLesson);
             i_Instructor.AddLessonToInstructor(newLesson, i_LessonData.Item3);
             newLesson.AddStudentToLesson(i_Student);
@@ -156,8 +168,11 @@ namespace PoolPlanLogic
             {
                 r_WeeklyLessonsSchedule[(int)i_LessonData.Item2] = new List<Lesson>();
             }
-            r_WeeklyLessonsSchedule[(int)i_LessonData.Item2].Add(newLesson); // allow me to know if pool is vacant
-
+            r_WeeklyLessonsSchedule[(int)i_LessonData.Item2].Add(newLesson); 
+            foreach(Instructor instructor in r_Instructors)
+            {
+                instructor.updateAvailabilityToInstructors(newLesson); // sync pool schedule with all instructors
+            }
         }
 
         public bool AttemptToAssignToExistentLesson(Student i_CurrentStudent)
@@ -183,8 +198,6 @@ namespace PoolPlanLogic
             return false;
         }
 
-
-        
 
         public List<int> IndexesOfQualifiedInstructors(eSwimStyle i_RequestedSwimStyle)
         {
@@ -213,13 +226,6 @@ namespace PoolPlanLogic
             }
             return allOperatingWeekDays;
         }
-
-        public void assignPrivateLessons()
-        {
-
-        }
-       
-
 
 
         public int GetInstructorIndexInList(string i_InstructorName)

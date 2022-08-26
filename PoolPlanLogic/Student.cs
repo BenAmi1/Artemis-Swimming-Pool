@@ -49,9 +49,9 @@ namespace PoolPlanLogic
             get { return m_StudentLessonMode[0]; }
         }
 
-        public bool DoesStudentHasSecondPriority()
+        public bool IsBooked()
         {
-            return m_StudentLessonMode.Count == 2;
+            return m_RegisteredLessons.Count > 0;
         }
 
         public eLessonMode StudentSecondPriority
