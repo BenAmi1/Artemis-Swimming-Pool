@@ -23,7 +23,14 @@ namespace PoolPlanLogic
             m_RegisteredLessons = new List<Lesson>();
         }
 
-        public void AddLessonToStudent(Lesson i_NewLessonToStudent) // what happen if i take down the ref
+        //test
+        public List<Lesson> studentlLessons
+        {
+            get { return m_RegisteredLessons; }
+        }
+         
+
+        public void AddLessonToStudentAgenda(Lesson i_NewLessonToStudent) // what happen if i take down the ref
         {
             m_RegisteredLessons.Add(i_NewLessonToStudent);
         }

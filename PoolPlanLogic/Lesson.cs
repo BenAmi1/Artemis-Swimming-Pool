@@ -31,7 +31,8 @@ namespace PoolPlanLogic
 
         private int setLessonLength()
         {
-            return r_LessonMode == eLessonMode.Private ? 45 : 60;
+            return r_LessonMode == eLessonMode.Private ?
+                PoolManagement.k_PrivateLessonLength : PoolManagement.k_GroupLessonLength;
         }
 
         public int LengthOfLesson

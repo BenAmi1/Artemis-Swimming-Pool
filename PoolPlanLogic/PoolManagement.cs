@@ -11,10 +11,12 @@ namespace PoolPlanLogic
         private readonly List<Student> r_RegisteredStudents;
         private readonly List<Instructor> r_Instructors;
         private readonly List<List<Lesson>> r_WeeklyLessonsSchedule;
+        private readonly List<Student> r_ConflictedStudents;
         private const int k_NotFound = -1;
-        public const int k_LenghOfPrivateLesson = 45;
-        public const int k_LenghOfGroupLesson = 60;
+        public const int k_PrivateLessonLength = 45; // to change
+        public const int k_GroupLessonLength = 60;
         public const int k_AmountOfDaysInWeek = 7;
+
 
         public PoolManagement()
         {
@@ -22,8 +24,27 @@ namespace PoolPlanLogic
             r_Instructors = new List<Instructor>();
             r_WeeklyLessonsSchedule = new List<List<Lesson>>(); // need to new list<lesson> and Lesson
             r_WeeklyLessonsSchedule = createAvailabilityBoardForInstructor(); // sets an array of array of Pairs
+            r_ConflictedStudents = new List<Student>();
         }
 
+        public void testingFunction()
+        {
+            int counter = 0;
+            foreach(Instructor instructor in r_Instructors)
+            {
+                foreach(List<Lesson> lst in instructor.instructorLessonsSchedule)
+                {
+                    if (lst != null)
+                    {
+                        counter += lst.Count;
+                    }
+
+                }
+            }
+
+            Console.WriteLine(counter);
+
+        }
 
         public bool addAvailablityToInstructor(string i_InstructorName, eWeekDay i_Day, Pair i_RangeOfHours)
         {
@@ -51,67 +72,84 @@ namespace PoolPlanLogic
                         if (lessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(currentStudent))
                             continue;
                         else
-                            CreateNewLessonAndAssignStudent(currentStudent, lessonMode);
+                        {
+                            if(!CreateNewLessonAndAssignStudent(currentStudent, lessonMode) &&
+                                                               currentStudent.StudentSecondPriority == eLessonMode.None)
+                            {
+                                r_ConflictedStudents.Add(currentStudent);
+                            }
+                        }
                     }
                 }
                 lessonMode = eLessonMode.Private;
             }
         }
 
-        public void HandleConflicts(List<Student> i_Conflicted)
-        {
-            List<List<int>> gaps = new List<List<int>>();
-            for (int i = 0; i < 2; i++) // init gap list
-            {
-                gaps[i] = new List<int>();
-                foreach (eSwimStyle style in (eSwimStyle[])Enum.GetValues(typeof(eSwimStyle)))
-                {
-                    gaps[i][(int)style] = new int();
-                }
-            }
-            
-            foreach (Student student in i_Conflicted)
-            {
-                if(student.StudentFirstPriority == eLessonMode.Group)
-                    gaps[(int)eLessonMode.Group][(int)student.RequestedSwimStyle]++;
-                else
-                    gaps[(int)eLessonMode.Private][(int)student.RequestedSwimStyle]++;
-            }
-        }
-
-        public List<Student> AssignSecondPriorities()
+        public void AssignSecondPriorities()
         {
             eLessonMode lessonMode = eLessonMode.Group;
-            List<Student> conflicts = new List<Student>();
             for (int iteration = 1; iteration <= 2; iteration++)
             {
                 foreach (Student currentStudent in r_RegisteredStudents)
                 {
-                    if (currentStudent.StudentSecondPriority == lessonMode && currentStudent.IsBooked())
+                    if (currentStudent.StudentSecondPriority == lessonMode && !currentStudent.IsBooked())
                     {
                         if (lessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(currentStudent))
                             continue;
                         else
                         {
                             if (!CreateNewLessonAndAssignStudent(currentStudent, lessonMode))
-                                conflicts.Add(currentStudent);
+                                r_ConflictedStudents.Add(currentStudent);
                         }
                     }
                 }
                 lessonMode = eLessonMode.Private;
             }
-            return conflicts;
         }
 
         public void AssignWeekAgenda()
         {
-            List<Student> conflictsOfStudents;
+            //int counter = 0;
+            List<Student> conflictsOfStudents = new List<Student>();
             AssignFirstPriorities();
-            conflictsOfStudents=AssignSecondPriorities();
-            if(conflictsOfStudents.Count>0)
+            AssignSecondPriorities();
+
+            //for (int i = 0; i < 30; i++)
+            //{
+            //    if (r_RegisteredStudents[i].studentlLessons.Count > 1)
+            //    {
+            //        counter++;
+            //    }
+            //}
+            //Console.WriteLine(counter);
+
+            if (r_ConflictedStudents.Count > 0) 
             {
-                HandleConflicts(conflictsOfStudents);
+                HandleConflicts();
             }
+        }
+
+        public void HandleConflicts()
+        {
+            List<List<int>> gaps = new List<List<int>>(2);
+            gaps = Enumerable.Repeat(default(List<int>), 2).ToList();
+            for (int i = 0; i < 2; i++) // init gap list
+            {
+                gaps[i] = Enumerable.Repeat(default(int),3).ToList();
+                foreach (eSwimStyle style in (eSwimStyle[])Enum.GetValues(typeof(eSwimStyle)))
+                {
+                    gaps[i][(int)style] = new int();
+                }
+            }
+
+            foreach (Student student in r_ConflictedStudents)
+            {
+                if (student.StudentFirstPriority == eLessonMode.Group)
+                    gaps[(int)eLessonMode.Group][(int)student.RequestedSwimStyle]++;
+                else
+                    gaps[(int)eLessonMode.Private][(int)student.RequestedSwimStyle]++;
+            }
+            Console.WriteLine("hh");
         }
 
         public bool CreateNewLessonAndAssignStudent(Student i_CurrentStudent, eLessonMode i_LessonMode)
@@ -161,7 +199,7 @@ namespace PoolPlanLogic
             newLesson = new Lesson(i_LessonData.Item2,
                                    i_Instructor.InstructorAvailability[(int)i_LessonData.Item2][i_LessonData.Item3],
                                    i_Student.RequestedSwimStyle, i_LessonMode, i_Instructor.InstructorName);
-            i_Student.AddLessonToStudent(newLesson);
+            i_Student.AddLessonToStudentAgenda(newLesson);
             i_Instructor.AddLessonToInstructor(newLesson, i_LessonData.Item3);
             newLesson.AddStudentToLesson(i_Student);
             if(r_WeeklyLessonsSchedule[(int)i_LessonData.Item2] == null)
@@ -171,7 +209,10 @@ namespace PoolPlanLogic
             r_WeeklyLessonsSchedule[(int)i_LessonData.Item2].Add(newLesson); 
             foreach(Instructor instructor in r_Instructors)
             {
-                instructor.updateAvailabilityToInstructors(newLesson); // sync pool schedule with all instructors
+                if (instructor.InstructorAvailability[(int)newLesson.LessonDay] != null) 
+                {
+                    instructor.SyncInstructorsToPoolSchedule(newLesson); // sync pool schedule with all instructors
+                }
             }
         }
 
@@ -189,7 +230,8 @@ namespace PoolPlanLogic
                     if (currentLesson.LessonSwimStyle == i_CurrentStudent.RequestedSwimStyle &&
                         currentLesson.LessonMode == eLessonMode.Group)
                     {
-                        i_CurrentStudent.AddLessonToStudent(currentLesson);
+                        i_CurrentStudent.AddLessonToStudentAgenda(currentLesson);
+                        currentLesson.AddStudentToLesson(i_CurrentStudent);
                         return true;
                     }
                 }

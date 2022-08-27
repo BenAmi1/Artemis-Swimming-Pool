@@ -11,7 +11,7 @@ namespace PoolPlanLogic
         private readonly string r_InstructorName;
         private List<eSwimStyle> m_InstructorStyles;
         private List<List<Pair>> m_InstructorAvailability;
-        private List<List<Lesson>> m_InstructorsLessonsThisWeek;
+        private List<List<Lesson>> m_InstructorsLessonsSchedule;
 
         // get weekDaysFromUser function. for each day get also an hours range
 
@@ -20,9 +20,15 @@ namespace PoolPlanLogic
             r_InstructorName = i_InstructorName;
             m_InstructorStyles = i_SwimStyles;
             m_InstructorAvailability = new List<List<Pair>>();
-            m_InstructorsLessonsThisWeek = new List<List<Lesson>>();
+            m_InstructorsLessonsSchedule = new List<List<Lesson>>();
             m_InstructorAvailability = createAvailabilityBoardForInstructor(); // sets an array of array of Pairs
-            m_InstructorsLessonsThisWeek = createLessonsScheduluForInstructor(); // sets an array of array of Lessons
+            m_InstructorsLessonsSchedule = createLessonsScheduluForInstructor(); // sets an array of array of Lessons
+        }
+
+        // to delete
+        public List<List<Lesson>> instructorLessonsSchedule
+        {
+            get { return m_InstructorsLessonsSchedule; }
         }
 
         public void AddLessonToInstructor(Lesson i_NewLesson, int i_TimeRangeIndex)
@@ -30,50 +36,60 @@ namespace PoolPlanLogic
             int lessonDayIndex = (int)i_NewLesson.LessonDay;
             int startOfLesson = m_InstructorAvailability[lessonDayIndex][i_TimeRangeIndex].Start;
             int endOfLesson;
-            if (m_InstructorsLessonsThisWeek[lessonDayIndex] == null)
+            if (m_InstructorsLessonsSchedule[lessonDayIndex] == null)
             {
-                m_InstructorsLessonsThisWeek[lessonDayIndex] = new List<Lesson>();
+                m_InstructorsLessonsSchedule[lessonDayIndex] = new List<Lesson>();
             }
-            m_InstructorsLessonsThisWeek[lessonDayIndex].Add(i_NewLesson);
+            m_InstructorsLessonsSchedule[lessonDayIndex].Add(i_NewLesson);
 
-            endOfLesson= addLessonToAvailability(lessonDayIndex, i_TimeRangeIndex, i_NewLesson.LengthOfLesson);
+            endOfLesson= clearLessonFromAvailability(lessonDayIndex, i_TimeRangeIndex, i_NewLesson.LengthOfLesson);
             i_NewLesson.LessonHour = new Pair(startOfLesson, endOfLesson); // set The Hour of the lesson
         }
 
-        public void updateAvailabilityToInstructors(Lesson i_lesson)
+        public void SyncInstructorsToPoolSchedule(Lesson i_Lesson)
         {
-            int lessonStart = i_lesson.LessonHour.Start;
-            int lessonEnd = i_lesson.LessonHour.End;
-            int indexToDelete = 0;
-            if (m_InstructorAvailability[(int)i_lesson.LessonDay] == null)
-                return;
-            else
+            int lessonStart = i_Lesson.LessonHour.Start, lessonEnd = i_Lesson.LessonHour.End;
+            int i_DayIndex = (int)i_Lesson.LessonDay, indexToDelete = 0;
+            bool availabilityModified = false;
+
+            foreach (Pair i_HourRange in m_InstructorAvailability[i_DayIndex])
             {
-                foreach(Pair hourRange in m_InstructorAvailability[(int)i_lesson.LessonDay])
+                if (lessonStart > i_HourRange.Start && lessonEnd < i_HourRange.End) 
                 {
-                    if(lessonStart > hourRange.Start && lessonEnd <hourRange.End) // devide
-                    {
-                        m_InstructorAvailability[(int)i_lesson.LessonDay].Add(new Pair(lessonEnd, hourRange.End));
-                        hourRange.End = lessonStart;
-                    }
-                    else if(lessonStart <=hourRange.Start && lessonEnd> hourRange.Start && lessonEnd< hourRange.End)
-                    {
-                        hourRange.Start = lessonEnd;
-                    }
-                    else if(lessonStart>hourRange.Start && lessonEnd >=hourRange.End)
-                    {
-                        hourRange.End = lessonStart;
-                    }
-                    else if(lessonStart<=hourRange.Start && lessonEnd >= hourRange.End)
-                    {
-                        m_InstructorAvailability[(int)i_lesson.LessonDay].RemoveAt(indexToDelete);
-                    }
-                    indexToDelete++;
+                    m_InstructorAvailability[i_DayIndex].Add(new Pair(lessonEnd, i_HourRange.End));
+                    i_HourRange.End = lessonStart;
+                    availabilityModified = true;
+                }
+                else if (lessonStart <= i_HourRange.Start && lessonEnd > i_HourRange.Start && lessonEnd < i_HourRange.End)
+                {
+                    i_HourRange.Start = lessonEnd;
+                    availabilityModified = true;
+                }
+                else if (lessonStart > i_HourRange.Start && lessonStart < i_HourRange.End && lessonEnd >= i_HourRange.End)
+                {
+                    i_HourRange.End = lessonStart;
+                    availabilityModified = true;
+                }
+                else if (lessonStart <= i_HourRange.Start && lessonEnd >= i_HourRange.End)
+                {
+                    m_InstructorAvailability[i_DayIndex].RemoveAt(indexToDelete);
+                    availabilityModified = true;
+                }
+                indexToDelete++;
+                if (availabilityModified == true)
+                {
+                    sortListByStartTime(i_DayIndex);
+                    return;
                 }
             }
         }
 
-        private int addLessonToAvailability(int i_DayIndex, int i_TimeRangeIndex, int i_LessonLength)
+        private void sortListByStartTime(int i_DayIndex)
+        {
+            m_InstructorAvailability[i_DayIndex]= m_InstructorAvailability[i_DayIndex].OrderBy(p => p.Start).ToList();
+        }
+
+        private int clearLessonFromAvailability(int i_DayIndex, int i_TimeRangeIndex, int i_LessonLength)
         {
             int startTime = m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start;
             if(startTime + i_LessonLength >= ((startTime / 100)*100)+60)
@@ -90,9 +106,9 @@ namespace PoolPlanLogic
             {
                 m_InstructorAvailability[i_DayIndex].RemoveAt(i_TimeRangeIndex); // we filled the whole hour
             }
-            m_InstructorAvailability[i_DayIndex] = m_InstructorAvailability[i_DayIndex].OrderBy(p => p.Start).ToList();
+            sortListByStartTime(i_DayIndex);
 
-            return m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start = startTime + i_LessonLength;
+            return m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start;
         }
 
         public void AddAvailability(eWeekDay i_AvailableDay, Pair i_RangeOfHours)
@@ -106,7 +122,7 @@ namespace PoolPlanLogic
             }
 
             m_InstructorAvailability[dayIndex].Add(newAvailableHoursToAdd);
-            m_InstructorAvailability[dayIndex] = m_InstructorAvailability[dayIndex].OrderBy(p => p.Start).ToList();
+            sortListByStartTime(dayIndex);
         }
 
         public List<eWeekDay> DaysCurrentInstructorBookedLesson()
@@ -114,7 +130,7 @@ namespace PoolPlanLogic
             List<eWeekDay> workingDays = new List<eWeekDay>();
             for (int day = 0; day < PoolManagement.k_AmountOfDaysInWeek; day++)
             {
-                if(m_InstructorsLessonsThisWeek[day] != null)
+                if(m_InstructorsLessonsSchedule[day] != null)
                 {
                     workingDays.Add((eWeekDay)day);
                 }
@@ -175,7 +191,7 @@ namespace PoolPlanLogic
 
         public bool IsScheduledForThisDay(eWeekDay i_Day)
         {
-            return m_InstructorsLessonsThisWeek[(int)i_Day] != null;
+            return m_InstructorsLessonsSchedule[(int)i_Day] != null;
         }
 
         public string InstructorName

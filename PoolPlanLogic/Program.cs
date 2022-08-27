@@ -36,11 +36,12 @@ namespace PoolPlanLogic
             lessonModes.Add(lm3);
             lessonModes.Add(lm4);
             int i = 0;
+
             for (i = 0; i < 30; i++)
             {
                 string firstname = Console.ReadLine();
                 string lastName = Console.ReadLine();
-                pm.AddStudent(firstname, lastName, swimStyle[i % 3], lessonModes[i % 4]);
+                pm.AddStudent(firstname, lastName, swimStyle[i % 3], lessonModes[i%4]);
             }
             Console.WriteLine("student added");
 
@@ -68,8 +69,10 @@ namespace PoolPlanLogic
             Console.WriteLine("INSTRUCTORS added");
 
             // adding constraints to instructors
-            pm.addAvailablityToInstructor("Yotam", eWeekDay.Monday, new Pair(1600, 2000));
+            pm.addAvailablityToInstructor("Yotam", eWeekDay.Monday, new Pair(1600, 2000)); //
             pm.addAvailablityToInstructor("Yotam", eWeekDay.Thursday, new Pair(1600, 2000));
+            pm.addAvailablityToInstructor("Yoni", eWeekDay.Monday, new Pair(1559,1800)); /// check
+
             pm.addAvailablityToInstructor("Yoni", eWeekDay.Tuesday, new Pair(800, 1500));
             pm.addAvailablityToInstructor("Yoni", eWeekDay.Wedensday, new Pair(800, 1500));
             pm.addAvailablityToInstructor("Yoni", eWeekDay.Thursday, new Pair(800, 1500));
@@ -77,8 +80,10 @@ namespace PoolPlanLogic
             pm.addAvailablityToInstructor("Johnny", eWeekDay.Tuesday, new Pair(1000, 1900));
             pm.addAvailablityToInstructor("Johnny", eWeekDay.Thursday, new Pair(1000, 1900));
 
+
             pm.AssignWeekAgenda();
 
+            pm.testingFunction();
 
 
             //for instructor

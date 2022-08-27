@@ -54,11 +54,11 @@ namespace PoolPlanLogic
 
             if (i_LessonMode == eLessonMode.Group)
             {
-                lengthOfThisLesson = PoolManagement.k_LenghOfGroupLesson;
+                lengthOfThisLesson = PoolManagement.k_GroupLessonLength;
             }
             else
             {
-                lengthOfThisLesson = PoolManagement.k_LenghOfPrivateLesson;
+                lengthOfThisLesson = PoolManagement.k_PrivateLessonLength;
             }
 
             return AmountOfMinutesAvailableInThisTimeRange >= lengthOfThisLesson ? true : false;
