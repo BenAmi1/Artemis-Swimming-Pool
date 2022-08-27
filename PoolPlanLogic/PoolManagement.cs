@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PoolPlanLogic
 {
-    class PoolManagement
+    public class PoolManagement
     {
         private readonly List<Student> r_RegisteredStudents;
         private readonly List<Instructor> r_Instructors;
