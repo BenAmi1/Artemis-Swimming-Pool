@@ -9,14 +9,14 @@ namespace PoolPlanUI
 {
     public class UserInput
     {
-        private readonly int r_MenuOptionsSize = 7;
+        private const int r_MenuOptionsSize = 7;
 
         public static eMenuOptions GetOptionMainMenu()
         {
             eMenuOptions validInput = eMenuOptions.UnDefined;
             string input = Console.ReadLine();
 
-            if (!eMenuOptions.TryParse(input, out validInput) || !((int)validInput >= 0 && (int)validInput <= 7))
+            if (!eMenuOptions.TryParse(input, out validInput) || !((int)validInput >= 0 && (int)validInput <= r_MenuOptionsSize))
             {
                 throw new ArgumentException();
             }
@@ -41,16 +41,18 @@ namespace PoolPlanUI
 
         public static eSwimStyle GetSwimStyle()
         {
-            eSwimStyle input;
-            int userInput;
+            eSwimStyle requestedSwimStyle;
+
             Console.WriteLine("Please Choose one of the following swimming styles:\n");
             foreach(eSwimStyle style in Enum.GetValues(typeof(eSwimStyle)))
             {
                 Console.WriteLine(@"Press ({0}) for {1}", (int)style + 1, style.ToString());
             }
 
-            return (eSwimStyle)GetNumber(1, Enum.GetNames(typeof(eLessonMode)).Length) - 1;
 
+            requestedSwimStyle =(eSwimStyle)GetNumber(1, Enum.GetNames(typeof(eSwimStyle)).Length) - 1;
+            Console.Clear();
+            return requestedSwimStyle;
         }
 
         public static List<eLessonMode> GetLessonModePriorities()
@@ -87,13 +89,81 @@ namespace PoolPlanUI
                 default:
                     return priorities;
             }
-
         }
 
-        public static string GetStudentName()
+        public static void AddDaysAndHours(Instructor i_Instructor)
+        {
+            int chosenDay;
+            string from, to;
+            Pair newPair = null;
+            Console.WriteLine("Please Choose one of the following days:\n");
+            for (int day = 0; day < PoolManagement.k_AmountOfDaysInWeek; day++)
+            {
+                Console.WriteLine(@"Press ({0}) for {1}", day + 1, ((eWeekDay)day).ToString());
+            }
+            chosenDay = GetNumber(1, PoolManagement.k_AmountOfDaysInWeek);
+
+            while (newPair == null)
+            {
+                Console.Clear();
+                Console.WriteLine("Please Choose an hour in this format: XX:XX\n");
+                Console.Write("FROM: ");
+                from = Console.ReadLine();
+                Console.Write("TO: ");
+                to = Console.ReadLine();
+                newPair = validateHoursFormat(from, to);
+                if(newPair == null)
+                {
+                    Console.WriteLine("Wrong input. Please press any key to continue.");
+                    Console.ReadLine();
+                }
+            }
+            i_Instructor.AddAvailability((eWeekDay)(chosenDay-1), newPair);
+            Console.Clear();
+        }
+
+        private static Pair validateHoursFormat(string from, string to)
+        {
+            string elementToCheck = from;
+            Pair hoursRange;
+            int startingTime, endingTime;
+
+            for (int check = 0; check < 2; check++)
+            {
+                if (elementToCheck.Length != 5)
+                    return null;
+                for (int indexInString = 0; indexInString < 5; indexInString++)
+                {
+                    if (indexInString == 2 && elementToCheck[indexInString] != ':')
+                        return null;
+                    if (indexInString != 2 && !char.IsDigit(from[indexInString]))
+                        return null;
+                }
+                elementToCheck = to;
+            }
+            if (!validHour(from) || !validHour(to))
+                return null;
+
+            from =from.Remove(2, 1); // insert the hours into int, as it managed in pool schedule
+            to=to.Remove(2, 1);
+
+            if(!int.TryParse(from, out startingTime) || !int.TryParse(to, out endingTime) || startingTime >=endingTime)
+                return null;
+       
+            hoursRange = new Pair(startingTime, endingTime);
+            return hoursRange;
+        }
+
+        static bool validHour(string hour)
+        {
+            return !(hour[0] > '2' || hour[3] > '5');
+        }
+
+        public static string GetName()
         {
             string userInput;
             userInput = Console.ReadLine();
+            Console.Clear();
             return userInput;
         }
     }

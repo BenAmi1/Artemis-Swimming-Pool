@@ -15,7 +15,7 @@ namespace PoolPlanLogic
         private const int k_NotFound = -1;
         public const int k_PrivateLessonLength = 45; // to change
         public const int k_GroupLessonLength = 60;
-        public const int k_AmountOfDaysInWeek = 7;
+        public const int k_AmountOfDaysInWeek = 5;
 
 
         public PoolManagement()
@@ -292,6 +292,11 @@ namespace PoolPlanLogic
         public void AddInstructorToStaff(string i_InstructorName, List<eSwimStyle> i_SwimStyles)
         {
             r_Instructors.Add(new Instructor(i_InstructorName, i_SwimStyles));
+        }
+
+        public List<Instructor> InstructorsList
+        {
+            get { return r_Instructors; }
         }
 
 

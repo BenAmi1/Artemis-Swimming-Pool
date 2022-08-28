@@ -11,10 +11,15 @@ namespace PoolPlanUI
     public class UserInterface
     {
         private readonly PoolManagement r_RunPool;
+        private readonly int k_AmountOfSwimStyles;
+        private readonly int k_AmountOfWorkingDays = 7;
+
+        private readonly string k_Blank = " ";
 
         public UserInterface()
         {
             r_RunPool = new PoolManagement();
+            k_AmountOfSwimStyles = Enum.GetNames(typeof(eSwimStyle)).Length;
             MainMenu();
         }
 
@@ -60,9 +65,9 @@ namespace PoolPlanUI
                 case eMenuOptions.AddStudent:
                     addNewStudent();
                     break;
-                    //case eMenuOptions.AddInstructor:
-                    //    showAllPlateNumbers();
-                    //    break;
+                case eMenuOptions.AddInstructor:
+                    addInstructor();
+                    break;
                     //case eMenuOptions.AddInstructorAvailability:
                     //    changeStatus();
                     //    break;
@@ -81,18 +86,77 @@ namespace PoolPlanUI
             }
         }
 
+        private void addInstructor()
+        {
+            string userInput;
+            string firstName;
+            List<eSwimStyle> swimStyles = new List<eSwimStyle>();
+            Console.WriteLine("Please insert the instructor's first name:");
+            firstName = UserInput.GetName();
+            swimStyles.Add(UserInput.GetSwimStyle());
+            Console.WriteLine("Would you like to add another swimming style?");
+
+            do
+            {
+                Console.WriteLine("Write one of the following (yes:no)");
+                userInput = Console.ReadLine();
+                Console.Clear();
+                while (userInput == "yes" && swimStyles.Count < k_AmountOfSwimStyles)
+                {
+                    swimStyles.Add(UserInput.GetSwimStyle());
+                    Console.Clear();
+                    if(swimStyles.Count< k_AmountOfSwimStyles)
+                        Console.WriteLine("Would you like to add another swimming style?");
+                    userInput = k_Blank;
+                }
+                if (userInput == "no" || swimStyles.Count == k_AmountOfSwimStyles)
+                    break;
+
+            } while (userInput != "yes" && userInput != "no");
+
+            r_RunPool.AddInstructorToStaff(firstName, swimStyles);
+            Console.WriteLine(@"{0} added successfully to the stuff of the pool!", firstName);
+            System.Threading.Thread.Sleep(500); // pause before clear screen
+            Console.Clear();
+            addAvailabilityToInstructor(r_RunPool.InstructorsList[r_RunPool.InstructorsList.Count-1]);
+        }
+
+        private void addAvailabilityToInstructor(Instructor i_Instructor)
+        {
+            string userInput;
+
+            Console.WriteLine("Now choose days and hours {0} can work:", i_Instructor.InstructorName);
+            UserInput.AddDaysAndHours(i_Instructor);
+            Console.WriteLine("Availability added successfully. Would you like to add another day and hours range?");
+
+            do
+            {
+                Console.WriteLine("Write one of the following (yes:no)");
+                userInput = Console.ReadLine();
+                Console.Clear();
+                while (userInput == "yes")
+                {
+                    UserInput.AddDaysAndHours(i_Instructor);
+                    Console.Clear();
+                    Console.WriteLine("Would you like to add more days and hours range?");
+                    userInput = k_Blank;
+                }
+                if (userInput == "no")
+                    break;
+
+            } while (userInput != "yes" && userInput != "no");
+        }
+
         private void addNewStudent()
         {
             string studentFirstName, studentLastName;
             eSwimStyle swimStyle;
             List<eLessonMode> lessonModePriorities;
 
-            Console.WriteLine("Please enter the student's first name:");
-            studentFirstName = UserInput.GetStudentName();
-            Console.Clear();
+            Console.WriteLine("Please insert the student's first name:");
+            studentFirstName = UserInput.GetName();
             Console.WriteLine("Please enter the student's last name:");
-            studentLastName = UserInput.GetStudentName();
-            Console.Clear();
+            studentLastName = UserInput.GetName();
             swimStyle = UserInput.GetSwimStyle();
             Console.Clear();
             lessonModePriorities = UserInput.GetLessonModePriorities();
