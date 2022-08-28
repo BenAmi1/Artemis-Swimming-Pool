@@ -49,7 +49,6 @@ namespace PoolPlanUI
                 Console.WriteLine(@"Press ({0}) for {1}", (int)style + 1, style.ToString());
             }
 
-
             requestedSwimStyle =(eSwimStyle)GetNumber(1, Enum.GetNames(typeof(eSwimStyle)).Length) - 1;
             Console.Clear();
             return requestedSwimStyle;
@@ -95,7 +94,7 @@ namespace PoolPlanUI
         {
             int chosenDay;
             string from, to;
-            Pair newPair = null;
+            TimeRange newPair = null;
             Console.WriteLine("Please Choose one of the following days:\n");
             for (int day = 0; day < PoolManagement.k_AmountOfDaysInWeek; day++)
             {
@@ -122,10 +121,10 @@ namespace PoolPlanUI
             Console.Clear();
         }
 
-        private static Pair validateHoursFormat(string from, string to)
+        private static TimeRange validateHoursFormat(string from, string to)
         {
             string elementToCheck = from;
-            Pair hoursRange;
+            TimeRange hoursRange;
             int startingTime, endingTime;
 
             for (int check = 0; check < 2; check++)
@@ -141,7 +140,7 @@ namespace PoolPlanUI
                 }
                 elementToCheck = to;
             }
-            if (!validHour(from) || !validHour(to))
+            if (validHour(from) || validHour(to))
                 return null;
 
             from =from.Remove(2, 1); // insert the hours into int, as it managed in pool schedule
@@ -150,13 +149,13 @@ namespace PoolPlanUI
             if(!int.TryParse(from, out startingTime) || !int.TryParse(to, out endingTime) || startingTime >=endingTime)
                 return null;
        
-            hoursRange = new Pair(startingTime, endingTime);
+            hoursRange = new TimeRange(startingTime, endingTime);
             return hoursRange;
         }
 
         static bool validHour(string hour)
         {
-            return !(hour[0] > '2' || hour[3] > '5');
+            return ((hour[0] > '2' || hour[3] > '5') || (hour[0]=='2' && hour[1] >'3'));
         }
 
         public static string GetName()

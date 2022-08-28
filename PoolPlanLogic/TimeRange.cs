@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace PoolPlanLogic
 {
-    public class Pair
+    public class TimeRange
     {
         private int m_StartTime;
         private int m_EndTime;
 
-        public Pair(int i_StartTime, int i_EndTime)
+        public TimeRange(int i_StartTime, int i_EndTime)
         {
             m_StartTime = i_StartTime;
             m_EndTime = i_EndTime;
@@ -29,7 +29,7 @@ namespace PoolPlanLogic
             set { m_EndTime = value; }
         }
 
-        public bool InRange(Pair i_RangeToCheck)
+        public bool InRange(TimeRange i_RangeToCheck)
         {
             return i_RangeToCheck.Start >= m_StartTime &&
                 i_RangeToCheck.Start < m_EndTime &&

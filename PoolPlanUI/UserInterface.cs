@@ -11,24 +11,24 @@ namespace PoolPlanUI
     public class UserInterface
     {
         private readonly PoolManagement r_RunPool;
-        private readonly int k_AmountOfSwimStyles;
-        private readonly int k_AmountOfWorkingDays = 7;
+        private readonly int r_AmountOfSwimStyles;
+        private const int k_AmountOfWorkingDays = 5;
 
         private readonly string k_Blank = " ";
 
         public UserInterface()
         {
             r_RunPool = new PoolManagement();
-            k_AmountOfSwimStyles = Enum.GetNames(typeof(eSwimStyle)).Length;
+            r_AmountOfSwimStyles = Enum.GetNames(typeof(eSwimStyle)).Length;
             MainMenu();
         }
 
         public void MainMenu()
         {
-            eMenuOptions userInput = eMenuOptions.UnDefined;
+            int userInput = (int)eMenuOptions.UnDefined;
 
             Console.WriteLine("Welcome to Asgard's Pool!\n");
-            while (userInput != eMenuOptions.Exit)
+            while (userInput != (int)eMenuOptions.Exit)
             {
                 Console.WriteLine("Please choose one of the following options:\n");
                 Console.WriteLine("press (1) to add new student to the pool");
@@ -39,26 +39,17 @@ namespace PoolPlanUI
                 Console.WriteLine("press (6) to display the booked lesson of a instructor");
                 Console.WriteLine("press (7) to show conflicts and recommandations");
                 Console.WriteLine("press (0) to exit\n");
-                try
-                {
-                    userInput = UserInput.GetOptionMainMenu();
-                    executeAction(userInput);
-                    Console.Clear();
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine("Bed argumant. Please try again!");
-                    System.Threading.Thread.Sleep(1500); // pause before clear screen
-                    Console.Clear();
-                }
 
+                userInput = UserInput.GetNumber(1,7);
+                Console.Clear();
+                executeAction(userInput);
                 Console.Clear();
             }
         }
 
-        private void executeAction(eMenuOptions i_UserInput)
+        private void executeAction(int i_UserInput)
         {
-            switch (i_UserInput)
+            switch ((eMenuOptions)i_UserInput)
             {
                 case eMenuOptions.Exit:
                     break;
@@ -68,12 +59,12 @@ namespace PoolPlanUI
                 case eMenuOptions.AddInstructor:
                     addInstructor();
                     break;
-                    //case eMenuOptions.AddInstructorAvailability:
-                    //    changeStatus();
-                    //    break;
-                    //case eMenuOptions.GetWeekAgenda:
-                    //    inflateAirInWheelsToMax();
-                    //    break;
+                case eMenuOptions.AddInstructorAvailability:
+                    AddInstructorAvailability();
+                    break;
+                case eMenuOptions.GetWeekAgenda:
+                    displayWeekAgenda();
+                    break;
                     //case eMenuOptions.ShowLessonsOfStudent:
                     //    refuelVehicle();
                     //    break;
@@ -84,6 +75,59 @@ namespace PoolPlanUI
                     //    showDataOfVehicle();
                     //    break;
             }
+        }
+
+        private void displayWeekAgenda()
+        {
+            int ScreenHorizontalOffset=0;
+            Lesson lesson;
+            r_RunPool.AssignWeekAgenda();
+            for (int day = 0; day < k_AmountOfWorkingDays; day++)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                //Console.SetCursorPosition(ScreenHorizontalOffset, 0);
+                Console.WriteLine(@"{0}'s Lessons:", ((eWeekDay)day).ToString());
+                Console.ForegroundColor = ConsoleColor.White;
+
+                if (r_RunPool.WeekAgenda[day] == null)
+                {
+                    //Console.SetCursorPosition(ScreenHorizontalOffset +8, 1);
+                    Console.WriteLine("None");
+                    ScreenHorizontalOffset += 30;
+                }
+                else
+                {
+                    Console.WriteLine(@"{0} Lessons have been schedualed on {1}", r_RunPool.WeekAgenda[day].Count,
+                                     ((eWeekDay)day).ToString());
+                    for (int index = 0; index < r_RunPool.WeekAgenda[day].Count; index++)
+                    {
+                        lesson = r_RunPool.WeekAgenda[day][index];
+                        Console.WriteLine(@"Lesson #{0}: {1} lesson", index + 1, lesson.LessonMode.ToString());
+                        Console.WriteLine(@"Instructor: {0}", lesson.LessonInstructor);
+                        Console.WriteLine(@"Swimming style: {0}", lesson.SwimStyle.ToString());
+
+                        Console.WriteLine(@"Lesson appointed time: {0} - {1}", lesson.HourToDisplay[0], lesson.HourToDisplay[1]);
+                        Console.WriteLine(@"{0} students are registered to the lesson", lesson.RegisteredStudents.Count);
+                        Console.WriteLine();
+                    }
+                    ScreenHorizontalOffset += 50;
+                }
+            }
+            Console.WriteLine("h");
+
+        }
+
+        private void AddInstructorAvailability()
+        {
+            int chosenInstructorIndex;
+
+            Console.WriteLine("Please Choose one of the following days:\n");
+            for (int i = 0; i < PoolManagement.k_AmountOfDaysInWeek; i++)
+            {
+                Console.WriteLine(@"Press ({0}) for {1}", i + 1, r_RunPool.InstructorsList[i].InstructorName);
+            }
+            chosenInstructorIndex = UserInput.GetNumber(1, r_RunPool.InstructorsList.Count) -1;
+            addAvailabilityToInstructor(r_RunPool.InstructorsList[chosenInstructorIndex]);
         }
 
         private void addInstructor()
@@ -101,22 +145,22 @@ namespace PoolPlanUI
                 Console.WriteLine("Write one of the following (yes:no)");
                 userInput = Console.ReadLine();
                 Console.Clear();
-                while (userInput == "yes" && swimStyles.Count < k_AmountOfSwimStyles)
+                while (userInput == "yes" && swimStyles.Count < r_AmountOfSwimStyles)
                 {
                     swimStyles.Add(UserInput.GetSwimStyle());
                     Console.Clear();
-                    if(swimStyles.Count< k_AmountOfSwimStyles)
+                    if(swimStyles.Count< r_AmountOfSwimStyles)
                         Console.WriteLine("Would you like to add another swimming style?");
                     userInput = k_Blank;
                 }
-                if (userInput == "no" || swimStyles.Count == k_AmountOfSwimStyles)
+                if (userInput == "no" || swimStyles.Count == r_AmountOfSwimStyles)
                     break;
 
             } while (userInput != "yes" && userInput != "no");
 
             r_RunPool.AddInstructorToStaff(firstName, swimStyles);
             Console.WriteLine(@"{0} added successfully to the stuff of the pool!", firstName);
-            System.Threading.Thread.Sleep(500); // pause before clear screen
+            //System.Threading.Thread.Sleep(500); // pause before clear screen
             Console.Clear();
             addAvailabilityToInstructor(r_RunPool.InstructorsList[r_RunPool.InstructorsList.Count-1]);
         }
@@ -137,6 +181,8 @@ namespace PoolPlanUI
                 while (userInput == "yes")
                 {
                     UserInput.AddDaysAndHours(i_Instructor);
+                    Console.WriteLine("Availability added successfully. Would you like to add another day and hours range?");
+                    //System.Threading.Thread.Sleep(500); // pause before clear screen
                     Console.Clear();
                     Console.WriteLine("Would you like to add more days and hours range?");
                     userInput = k_Blank;
@@ -163,7 +209,7 @@ namespace PoolPlanUI
             Console.Clear();
             r_RunPool.AddStudent(studentFirstName, studentLastName, swimStyle, lessonModePriorities);
             Console.WriteLine(@"{0} {1} registered successfully!", studentFirstName, studentLastName);
-            System.Threading.Thread.Sleep(1500); // pause before clear screen
+            //System.Threading.Thread.Sleep(1500); // pause before clear screen
 
         }
 

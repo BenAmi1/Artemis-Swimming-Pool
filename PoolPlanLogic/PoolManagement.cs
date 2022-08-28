@@ -27,26 +27,12 @@ namespace PoolPlanLogic
             r_ConflictedStudents = new List<Student>();
         }
 
-        public void testingFunction()
+        public List<List<Lesson>> WeekAgenda
         {
-            int counter = 0;
-            foreach(Instructor instructor in r_Instructors)
-            {
-                foreach(List<Lesson> lst in instructor.instructorLessonsSchedule)
-                {
-                    if (lst != null)
-                    {
-                        counter += lst.Count;
-                    }
-
-                }
-            }
-
-            Console.WriteLine(counter);
-
+            get { return r_WeeklyLessonsSchedule; }
         }
 
-        public bool addAvailablityToInstructor(string i_InstructorName, eWeekDay i_Day, Pair i_RangeOfHours)
+        public bool addAvailablityToInstructor(string i_InstructorName, eWeekDay i_Day, TimeRange i_RangeOfHours)
         {
             int instructorIndex = GetInstructorIndexInList(i_InstructorName);
             if (instructorIndex != k_NotFound)
@@ -227,7 +213,7 @@ namespace PoolPlanLogic
                 }
                 foreach (Lesson currentLesson in r_WeeklyLessonsSchedule[day])
                 {
-                    if (currentLesson.LessonSwimStyle == i_CurrentStudent.RequestedSwimStyle &&
+                    if (currentLesson.SwimStyle == i_CurrentStudent.RequestedSwimStyle &&
                         currentLesson.LessonMode == eLessonMode.Group)
                     {
                         i_CurrentStudent.AddLessonToStudentAgenda(currentLesson);
@@ -299,6 +285,21 @@ namespace PoolPlanLogic
             get { return r_Instructors; }
         }
 
+        public void testingFunction()
+        {
+            int counter = 0;
+            foreach (Instructor instructor in r_Instructors)
+            {
+                foreach (List<Lesson> lst in instructor.instructorLessonsSchedule)
+                {
+                    if (lst != null)
+                    {
+                        counter += lst.Count;
+                    }
+                }
+            }
+            Console.WriteLine(counter);
+        }
 
         private List<List<Lesson>> createAvailabilityBoardForInstructor()
         {
@@ -306,12 +307,5 @@ namespace PoolPlanLogic
             // NOTE: this function initializing only the main list representing the days!
             //Therefore --> days that are not available will remain null and will not be allocated!
         }
-
-
-        // think of the algorithm
-        // working by priorities -- as early as possible
-        // first of all - fill the groups
-        // afterwards - fill in the private
-        // createLesson(...)
     }
 }

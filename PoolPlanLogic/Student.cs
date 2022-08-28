@@ -10,7 +10,7 @@ namespace PoolPlanLogic
     {
         private readonly string r_StudentFirstName;
         private readonly string r_StudentLastName;
-        private eSwimStyle m_StudentSwimStyle; // an option to change during runtime?
+        private eSwimStyle m_StudentSwimStyle; 
         private readonly List<eLessonMode> m_StudentLessonMode;
         private List<Lesson> m_RegisteredLessons;
 

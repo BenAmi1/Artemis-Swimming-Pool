@@ -48,7 +48,7 @@
     <Compile Include="eWeekDay.cs" />
     <Compile Include="Instructor.cs" />
     <Compile Include="Lesson.cs" />
-    <Compile Include="Pair.cs" />
+    <Compile Include="TimeRange.cs" />
     <Compile Include="PoolManagement.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -69,16 +69,16 @@ namespace PoolPlanLogic
             Console.WriteLine("INSTRUCTORS added");
 
             // adding constraints to instructors
-            pm.addAvailablityToInstructor("Yotam", eWeekDay.Monday, new Pair(1600, 2000)); //
-            pm.addAvailablityToInstructor("Yotam", eWeekDay.Thursday, new Pair(1600, 2000));
-            pm.addAvailablityToInstructor("Yoni", eWeekDay.Monday, new Pair(1559,1800)); /// check
+            pm.addAvailablityToInstructor("Yotam", eWeekDay.Monday, new TimeRange(1600, 2000)); //
+            pm.addAvailablityToInstructor("Yotam", eWeekDay.Thursday, new TimeRange(1600, 2000));
+            pm.addAvailablityToInstructor("Yoni", eWeekDay.Monday, new TimeRange(1559,1800)); /// check
 
-            pm.addAvailablityToInstructor("Yoni", eWeekDay.Tuesday, new Pair(800, 1500));
-            pm.addAvailablityToInstructor("Yoni", eWeekDay.Wedensday, new Pair(800, 1500));
-            pm.addAvailablityToInstructor("Yoni", eWeekDay.Thursday, new Pair(800, 1500));
-            pm.addAvailablityToInstructor("Johnny", eWeekDay.Sunday, new Pair(1000, 1900));
-            pm.addAvailablityToInstructor("Johnny", eWeekDay.Tuesday, new Pair(1000, 1900));
-            pm.addAvailablityToInstructor("Johnny", eWeekDay.Thursday, new Pair(1000, 1900));
+            pm.addAvailablityToInstructor("Yoni", eWeekDay.Tuesday, new TimeRange(800, 1500));
+            pm.addAvailablityToInstructor("Yoni", eWeekDay.Wedensday, new TimeRange(800, 1500));
+            pm.addAvailablityToInstructor("Yoni", eWeekDay.Thursday, new TimeRange(800, 1500));
+            pm.addAvailablityToInstructor("Johnny", eWeekDay.Sunday, new TimeRange(1000, 1900));
+            pm.addAvailablityToInstructor("Johnny", eWeekDay.Tuesday, new TimeRange(1000, 1900));
+            pm.addAvailablityToInstructor("Johnny", eWeekDay.Thursday, new TimeRange(1000, 1900));
 
 
             pm.AssignWeekAgenda();
