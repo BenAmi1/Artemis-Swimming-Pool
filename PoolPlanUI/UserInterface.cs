@@ -40,7 +40,7 @@ namespace PoolPlanUI
                 Console.WriteLine("press (7) to show conflicts and recommandations");
                 Console.WriteLine("press (0) to exit\n");
 
-                userInput = UserInput.GetNumber(1,7);
+                userInput = UserInput.GetNumber(0,7);
                 Console.Clear();
                 executeAction(userInput);
                 Console.Clear();
@@ -63,7 +63,7 @@ namespace PoolPlanUI
                     AddInstructorAvailability();
                     break;
                 case eMenuOptions.GetWeekAgenda:
-                    displayWeekAgenda();
+                    displayWeekAgenda2();
                     break;
                     //case eMenuOptions.ShowLessonsOfStudent:
                     //    refuelVehicle();
@@ -75,6 +75,51 @@ namespace PoolPlanUI
                     //    showDataOfVehicle();
                     //    break;
             }
+        }
+
+        private void displayWeekAgenda2()
+        {
+            Lesson lesson;
+            int verticaloffset = 0, screenHorizontalOffset = 0;
+            r_RunPool.AssignWeekAgenda();
+            for (int day = 0; day < k_AmountOfWorkingDays; day++)
+            {
+                verticaloffset = 0;
+                if (r_RunPool.WeekAgenda[day] != null)
+                {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.SetCursorPosition(screenHorizontalOffset, verticaloffset);
+                    Console.Write(@"{0}: ", ((eWeekDay)day).ToString());
+                    Console.WriteLine(@"{0} lessons", r_RunPool.WeekAgenda[day].Count,((eWeekDay)day).ToString());
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine();
+                    verticaloffset = Console.CursorTop;
+                    for (int index = 0; index < r_RunPool.WeekAgenda[day].Count; index++)
+                    {
+                        verticaloffset = Console.CursorTop;
+                        printLessonData(day, index, screenHorizontalOffset, verticaloffset);
+                    }
+                    verticaloffset = Console.CursorTop;
+                    screenHorizontalOffset += 24;
+                }
+            }
+            Console.ReadLine();
+        }
+
+        private void printLessonData(int i_Day, int i_Index, int i_ScreenHorizontalOffset, int i_Verticaloffset)
+        {
+            Lesson lesson;
+            Console.SetCursorPosition(i_ScreenHorizontalOffset + 2, i_Verticaloffset);
+            lesson = r_RunPool.WeekAgenda[i_Day][i_Index];
+            Console.WriteLine(@"{0}, {1}", lesson.LessonMode.ToString(), lesson.SwimStyle.ToString());
+            i_Verticaloffset = Console.CursorTop;
+            Console.SetCursorPosition(i_ScreenHorizontalOffset + 2, i_Verticaloffset);
+            Console.WriteLine(@"({0} - {1})", lesson.HourToDisplay[0], lesson.HourToDisplay[1]);
+            i_Verticaloffset = Console.CursorTop;
+            Console.SetCursorPosition(i_ScreenHorizontalOffset + 2, i_Verticaloffset);
+            Console.WriteLine(@"   [{0}]", lesson.LessonInstructor);
+            Console.WriteLine();
+            i_Verticaloffset = Console.CursorTop;
         }
 
         private void displayWeekAgenda()
@@ -181,9 +226,9 @@ namespace PoolPlanUI
                 while (userInput == "yes")
                 {
                     UserInput.AddDaysAndHours(i_Instructor);
-                    Console.WriteLine("Availability added successfully. Would you like to add another day and hours range?");
+
                     //System.Threading.Thread.Sleep(500); // pause before clear screen
-                    Console.Clear();
+                    
                     Console.WriteLine("Would you like to add more days and hours range?");
                     userInput = k_Blank;
                 }

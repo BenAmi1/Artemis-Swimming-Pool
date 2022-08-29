@@ -91,24 +91,27 @@ namespace PoolPlanLogic
 
         private int clearLessonFromAvailability(int i_DayIndex, int i_TimeRangeIndex, int i_LessonLength)
         {
-            int startTime = m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start;
-            if(startTime + i_LessonLength >= ((startTime / 100)*100)+60)
+            int hourRangeStartTime = m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start;
+            int endTimOfLesson = 0;
+            if(hourRangeStartTime + i_LessonLength >= ((hourRangeStartTime / 100)*100)+60)
             {
                 // we pass to the next hour
-                m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start = startTime + i_LessonLength + 40;
+                m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start = hourRangeStartTime + i_LessonLength + 40;
             }
             else
             {
-                m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start = startTime + i_LessonLength;
+                m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start = hourRangeStartTime + i_LessonLength;
             }
-            if(m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start ==
+
+            endTimOfLesson = m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start;
+            if (m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start ==
                m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].End)
             {
                 m_InstructorAvailability[i_DayIndex].RemoveAt(i_TimeRangeIndex); // The whole hour is filled 
             }
 
             sortListByStartTime(i_DayIndex);
-            return m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start;
+            return endTimOfLesson;
         }
 
         public void AddAvailability(eWeekDay i_AvailableDay, TimeRange i_RangeOfHours)
