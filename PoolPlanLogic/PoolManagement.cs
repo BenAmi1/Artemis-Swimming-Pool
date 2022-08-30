@@ -16,7 +16,7 @@ namespace PoolPlanLogic
         public const int k_PrivateLessonLength = 45; // to change
         public const int k_GroupLessonLength = 60;
         public const int k_AmountOfDaysInWeek = 5;
-
+        public const int k_GroupLessonCapacity = 3;
 
         public PoolManagement()
         {
@@ -53,14 +53,14 @@ namespace PoolPlanLogic
             {
                 foreach (Student currentStudent in r_RegisteredStudents)
                 {
-                    if (currentStudent.StudentFirstPriority == lessonMode)// first: groups lesson, afterward: privates
+                    if (currentStudent.FirstPriority == lessonMode)// first: groups lesson, afterward: privates
                     {
                         if (lessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(currentStudent))
                             continue;
                         else
                         {
                             if(!CreateNewLessonAndAssignStudent(currentStudent, lessonMode) &&
-                                                               currentStudent.StudentSecondPriority == eLessonMode.None)
+                                                               currentStudent.SecondPriority == eLessonMode.None)
                             {
                                 r_ConflictedStudents.Add(currentStudent);
                             }
@@ -78,7 +78,7 @@ namespace PoolPlanLogic
             {
                 foreach (Student currentStudent in r_RegisteredStudents)
                 {
-                    if (currentStudent.StudentSecondPriority == lessonMode && !currentStudent.IsBooked())
+                    if (currentStudent.SecondPriority == lessonMode && !currentStudent.IsBooked())
                     {
                         if (lessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(currentStudent))
                             continue;
@@ -108,34 +108,30 @@ namespace PoolPlanLogic
             //    }
             //}
             //Console.WriteLine(counter);
-
-            if (r_ConflictedStudents.Count > 0) 
-            {
-                HandleConflicts();
-            }
         }
 
-        public void HandleConflicts()
+        public List<List<int>> HandleConflicts()
         {
-            List<List<int>> gaps = new List<List<int>>(2);
-            gaps = Enumerable.Repeat(default(List<int>), 2).ToList();
+            List<List<int>> conflicts = new List<List<int>>();
+            conflicts = Enumerable.Repeat(default(List<int>), 2).ToList();
             for (int i = 0; i < 2; i++) // init gap list
             {
-                gaps[i] = Enumerable.Repeat(default(int),3).ToList();
+                conflicts[i] = Enumerable.Repeat(default(int),3).ToList();
                 foreach (eSwimStyle style in (eSwimStyle[])Enum.GetValues(typeof(eSwimStyle)))
                 {
-                    gaps[i][(int)style] = new int();
+                    conflicts[i][(int)style] = new int();
                 }
             }
 
             foreach (Student student in r_ConflictedStudents)
             {
-                if (student.StudentFirstPriority == eLessonMode.Group)
-                    gaps[(int)eLessonMode.Group][(int)student.RequestedSwimStyle]++;
+                if (student.FirstPriority == eLessonMode.Group)
+                    conflicts[(int)eLessonMode.Group][(int)student.RequestedSwimStyle]++;
                 else
-                    gaps[(int)eLessonMode.Private][(int)student.RequestedSwimStyle]++;
+                    conflicts[(int)eLessonMode.Private][(int)student.RequestedSwimStyle]++;
             }
-            Console.WriteLine("hh");
+
+            return conflicts;
         }
 
         public bool CreateNewLessonAndAssignStudent(Student i_CurrentStudent, eLessonMode i_LessonMode)
@@ -145,7 +141,7 @@ namespace PoolPlanLogic
             List<int> qualifiedInstructorsIndex;
             Tuple<bool, eWeekDay, int> result;
             Instructor currentInstructor;
-            eLessonMode lessonMode = i_CurrentStudent.StudentFirstPriority;
+            eLessonMode lessonMode = i_CurrentStudent.FirstPriority;
 
             qualifiedInstructorsIndex = IndexesOfQualifiedInstructors(i_CurrentStudent.RequestedSwimStyle);
             for (int instructorIndex = 0; instructorIndex < qualifiedInstructorsIndex.Count; instructorIndex++)
@@ -200,11 +196,11 @@ namespace PoolPlanLogic
                     instructor.SyncInstructorsToPoolSchedule(newLesson); // sync pool schedule with all instructors
                 }
             }
+            sortLessonsByStartTime((int)newLesson.LessonDay);
         }
 
         public bool AttemptToAssignToExistentLesson(Student i_CurrentStudent)
         {
-            // need to understand wether there is a collision between two instructors
             for (int day = 0; day < k_AmountOfDaysInWeek; day++)
             {
                 if(r_WeeklyLessonsSchedule[day] ==null) // to check if neccessary
@@ -214,7 +210,8 @@ namespace PoolPlanLogic
                 foreach (Lesson currentLesson in r_WeeklyLessonsSchedule[day])
                 {
                     if (currentLesson.SwimStyle == i_CurrentStudent.RequestedSwimStyle &&
-                        currentLesson.LessonMode == eLessonMode.Group)
+                        currentLesson.LessonMode == eLessonMode.Group &&
+                        currentLesson.RegisteredStudents.Count < k_GroupLessonCapacity) 
                     {
                         i_CurrentStudent.AddLessonToStudentAgenda(currentLesson);
                         currentLesson.AddStudentToLesson(i_CurrentStudent);
@@ -306,6 +303,21 @@ namespace PoolPlanLogic
             return Enumerable.Repeat(default(List<Lesson>), k_AmountOfDaysInWeek).ToList();
             // NOTE: this function initializing only the main list representing the days!
             //Therefore --> days that are not available will remain null and will not be allocated!
+        }
+
+        public List<Student> RegisteredStudents
+        {
+            get { return r_RegisteredStudents; }
+        }
+
+        public List<Student> ConflictedStudents
+        {
+            get { return r_ConflictedStudents; }
+        }
+
+        private void sortLessonsByStartTime(int i_Day)
+        {
+            r_WeeklyLessonsSchedule[i_Day] = r_WeeklyLessonsSchedule[i_Day].OrderBy(p => p.LessonHour.Start).ToList();
         }
     }
 }

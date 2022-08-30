@@ -39,6 +39,7 @@ namespace PoolPlanUI
             return validInput;
         }
 
+
         public static eSwimStyle GetSwimStyle()
         {
             eSwimStyle requestedSwimStyle;
@@ -90,25 +91,33 @@ namespace PoolPlanUI
             }
         }
 
-        public static void AddDaysAndHours(Instructor i_Instructor)
+        public static int GetDay()
         {
             int chosenDay;
-            string from, to;
-            TimeRange newPair = null;
+
             Console.WriteLine("Please Choose one of the following days:\n");
             for (int day = 0; day < PoolManagement.k_AmountOfDaysInWeek; day++)
             {
                 Console.WriteLine(@"Press ({0}) for {1}", day + 1, ((eWeekDay)day).ToString());
             }
-            chosenDay = GetNumber(1, PoolManagement.k_AmountOfDaysInWeek);
+            chosenDay = GetNumber(1, PoolManagement.k_AmountOfDaysInWeek) -1;
+            return chosenDay;
+        }
 
+        public static void AddDaysAndHours(Instructor i_Instructor)
+        {
+            int chosenDay;
+            string from, to;
+            TimeRange newPair = null;
+
+            chosenDay = GetDay();
             while (newPair == null)
             {
                 Console.Clear();
                 Console.WriteLine("Please Choose an hour in this format: XX:XX\n");
                 Console.Write("FROM: ");
                 from = Console.ReadLine();
-                Console.Write("TO: ");
+                Console.Write("TO:   ");
                 to = Console.ReadLine();
                 newPair = validateHoursFormat(from, to);
                 if(newPair == null)
@@ -117,7 +126,7 @@ namespace PoolPlanUI
                     Console.ReadLine();
                 }
             }
-            i_Instructor.AddAvailability((eWeekDay)(chosenDay-1), newPair);
+            i_Instructor.AddAvailability((eWeekDay)(chosenDay), newPair);
             Console.Clear();
         }
 

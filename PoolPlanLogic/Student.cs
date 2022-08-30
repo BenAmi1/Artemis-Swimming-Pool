@@ -35,12 +35,12 @@ namespace PoolPlanLogic
             m_RegisteredLessons.Add(i_NewLessonToStudent);
         }
 
-        public string StudentFirstName
+        public string FirstName
         {
             get { return r_StudentFirstName; }
         }
 
-        public string StudentLastName
+        public string LastName
         {
             get { return r_StudentLastName; }
         }
@@ -51,7 +51,7 @@ namespace PoolPlanLogic
             set { m_StudentSwimStyle = value; }
         }
 
-        public eLessonMode StudentFirstPriority
+        public eLessonMode FirstPriority
         {
             get { return m_StudentLessonMode[0]; }
         }
@@ -61,7 +61,7 @@ namespace PoolPlanLogic
             return m_RegisteredLessons.Count > 0;
         }
 
-        public eLessonMode StudentSecondPriority
+        public eLessonMode SecondPriority
         {
             get { return m_StudentLessonMode[1]; } // return the second priority of student
         }

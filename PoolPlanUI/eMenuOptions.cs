@@ -11,11 +11,11 @@ namespace PoolPlanUI
         Exit,
         AddStudent,
         AddInstructor,
-        AddInstructorAvailability,
+        addAvailabilityToExistingInstructor,
         GetWeekAgenda,
         ShowLessonsOfStudent,
         GetLessonsOfInstructor,
-        ShowConflicts,
+        ParticipantsInALesson,
         UnDefined
     }
 }

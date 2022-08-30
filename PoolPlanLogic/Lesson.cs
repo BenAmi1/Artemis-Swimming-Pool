@@ -14,7 +14,7 @@ namespace PoolPlanLogic
         private readonly TimeRange r_LessonInTimeRange;
         private readonly eSwimStyle r_LessonStyle;
         private readonly eLessonMode r_LessonMode;
-        private readonly string r_LessonInstructor;
+        private readonly string r_LessonInstructorName;
         private readonly List<Student> r_ParticipatingStudents;
 
         public Lesson(eWeekDay i_Day, TimeRange i_Time, eSwimStyle i_Style, eLessonMode i_Mode, string i_InstructorName)
@@ -23,7 +23,7 @@ namespace PoolPlanLogic
             r_LessonInTimeRange = i_Time;
             r_LessonStyle = i_Style;
             r_LessonMode = i_Mode;
-            r_LessonInstructor = i_InstructorName;
+            r_LessonInstructorName = i_InstructorName;
             r_ParticipatingStudents = new List<Student>(); // init only, adding students - in another function
             r_lessonLength = setLessonLength();
             // whats with the lessons hour
@@ -73,7 +73,7 @@ namespace PoolPlanLogic
 
         public string LessonInstructor
         {
-            get { return r_LessonInstructor; }
+            get { return r_LessonInstructorName; }
         }
 
         public List<Student> RegisteredStudents
@@ -90,7 +90,6 @@ namespace PoolPlanLogic
         public List<string> setHoursInString()
         {
             List<string> hourRange = new List<string>();
-            string from, to;
             hourRange.Add(m_LessonAppointedTime.Start.ToString()); // check
             hourRange.Add(m_LessonAppointedTime.End.ToString());
 
