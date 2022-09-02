@@ -361,11 +361,6 @@ namespace PoolPlanLogic
             return true;
         }
 
-        private List<List<List<TimeRange>>> createInstructorsAvailabilityLists(int number)
-        {
-            return Enumerable.Repeat(default(List<List<TimeRange>>), number).ToList();
-        }
-
         private List<List<Lesson>> createAvailabilityBoardForInstructor()
         {
             return Enumerable.Repeat(default(List<Lesson>), k_AmountOfDaysInWeek).ToList();
