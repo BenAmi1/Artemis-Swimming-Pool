@@ -29,6 +29,15 @@ namespace PoolPlanLogic
             set { m_EndTime = value; }
         }
 
+        public bool CongruenceInHours(TimeRange i_RangeToCheck)
+        {
+            return (i_RangeToCheck.Start < m_StartTime && i_RangeToCheck.End > m_StartTime &&
+                    i_RangeToCheck.End <= m_EndTime) ||
+                    (i_RangeToCheck.m_StartTime >= m_StartTime && i_RangeToCheck.m_StartTime < m_EndTime &&
+                    i_RangeToCheck.m_EndTime >= m_EndTime) ||
+                    i_RangeToCheck.m_StartTime < m_StartTime && i_RangeToCheck.End > m_EndTime;
+        }
+
         public bool InRange(TimeRange i_RangeToCheck)
         {
             return i_RangeToCheck.Start >= m_StartTime &&

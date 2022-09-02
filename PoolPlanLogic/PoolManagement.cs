@@ -13,7 +13,7 @@ namespace PoolPlanLogic
         private readonly List<List<Lesson>> r_WeeklyLessonsSchedule;
         private readonly List<Student> r_ConflictedStudents;
         private const int k_NotFound = -1;
-        public const int k_PrivateLessonLength = 45; // to change
+        public const int k_PrivateLessonLength = 45;
         public const int k_GroupLessonLength = 60;
         public const int k_AmountOfDaysInWeek = 5;
         public const int k_GroupLessonCapacity = 3;
@@ -46,69 +46,67 @@ namespace PoolPlanLogic
             }
         }
 
-        public void AssignFirstPriorities()
+        public void AssignWeekAgenda(List<Student> i_ListOfStudents )
         {
             eLessonMode lessonMode = eLessonMode.Group;
             for (int iteration = 1; iteration <= 2; iteration++)
             {
-                foreach (Student currentStudent in r_RegisteredStudents)
+                foreach (Student currentStudent in i_ListOfStudents)
                 {
-                    if (currentStudent.FirstPriority == lessonMode)// first: groups lesson, afterward: privates
+                    AssignFirstPriorities(currentStudent, lessonMode);
+                }
+                lessonMode = eLessonMode.Private;
+            }
+
+            lessonMode = eLessonMode.Group;
+            for (int iteration = 1; iteration <= 2; iteration++)
+            {
+                foreach (Student currentStudent in i_ListOfStudents)
+                {
+                    if (!currentStudent.IsBooked())
                     {
-                        if (lessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(currentStudent))
-                            continue;
-                        else
-                        {
-                            if(!CreateNewLessonAndAssignStudent(currentStudent, lessonMode) &&
-                                                               currentStudent.SecondPriority == eLessonMode.None)
-                            {
-                                r_ConflictedStudents.Add(currentStudent);
-                            }
-                        }
+                        AssignSecondPriorities(currentStudent, lessonMode);
                     }
                 }
                 lessonMode = eLessonMode.Private;
             }
         }
 
-        public void AssignSecondPriorities()
+        public void AssignFirstPriorities(Student i_CurrentStudent, eLessonMode i_LessonMode)
         {
-            eLessonMode lessonMode = eLessonMode.Group;
-            for (int iteration = 1; iteration <= 2; iteration++)
+            if (i_CurrentStudent.FirstPriority == i_LessonMode)// first: groups lesson, afterward: privates
             {
-                foreach (Student currentStudent in r_RegisteredStudents)
+                if (i_LessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(i_CurrentStudent))
+                    return;
+                else
                 {
-                    if (currentStudent.SecondPriority == lessonMode && !currentStudent.IsBooked())
+                    if (!TryToCreateNewLessonAndAssignStudent(i_CurrentStudent, i_LessonMode) &&
+                                                             i_CurrentStudent.SecondPriority == eLessonMode.None &&
+                                                             !r_ConflictedStudents.Contains(i_CurrentStudent))
                     {
-                        if (lessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(currentStudent))
-                            continue;
-                        else
-                        {
-                            if (!CreateNewLessonAndAssignStudent(currentStudent, lessonMode))
-                                r_ConflictedStudents.Add(currentStudent);
-                        }
+                        r_ConflictedStudents.Add(i_CurrentStudent);
                     }
                 }
-                lessonMode = eLessonMode.Private;
             }
         }
 
-        public void AssignWeekAgenda()
+        public void AssignSecondPriorities(Student i_CurrentStudent, eLessonMode i_LessonMode)
         {
-            //int counter = 0;
-            List<Student> conflictsOfStudents = new List<Student>();
-            AssignFirstPriorities();
-            AssignSecondPriorities();
-
-            //for (int i = 0; i < 30; i++)
-            //{
-            //    if (r_RegisteredStudents[i].studentlLessons.Count > 1)
-            //    {
-            //        counter++;
-            //    }
-            //}
-            //Console.WriteLine(counter);
+            if (i_CurrentStudent.SecondPriority == i_LessonMode)
+            {
+                if (i_LessonMode == eLessonMode.Group && AttemptToAssignToExistentLesson(i_CurrentStudent))
+                    return;
+                else
+                {
+                    if (!TryToCreateNewLessonAndAssignStudent(i_CurrentStudent, i_LessonMode) &&
+                                                             !r_ConflictedStudents.Contains(i_CurrentStudent))
+                    {
+                        r_ConflictedStudents.Add(i_CurrentStudent);
+                    }
+                }
+            }
         }
+
 
         public List<List<int>> HandleConflicts()
         {
@@ -134,45 +132,46 @@ namespace PoolPlanLogic
             return conflicts;
         }
 
-        public bool CreateNewLessonAndAssignStudent(Student i_CurrentStudent, eLessonMode i_LessonMode)
+        public bool TryToCreateNewLessonAndAssignStudent(Student i_CurrentStudent, eLessonMode i_LessonMode)
         {
-            // dont forget to update the lessons list in pool management class
-            List<eWeekDay> daysCurrentInstructorWorks, allDaysOfWeek;
             List<int> qualifiedInstructorsIndex;
+            eLessonMode lessonMode = i_CurrentStudent.FirstPriority;
+            qualifiedInstructorsIndex = IndexesOfQualifiedInstructors(i_CurrentStudent.RequestedSwimStyle);
+
+            if (TryBookLessonOnIdealDay(qualifiedInstructorsIndex, i_CurrentStudent, lessonMode, false))
+                return true;
+            else
+                return TryBookLessonOnIdealDay(qualifiedInstructorsIndex, i_CurrentStudent, lessonMode, true);
+        }
+
+
+        private bool TryBookLessonOnIdealDay(List<int> i_QualifiedInstructorsIndex, Student i_Student, eLessonMode i_Mode, bool i_CheckForAnyDay)
+        {
             Tuple<bool, eWeekDay, int> result;
             Instructor currentInstructor;
-            eLessonMode lessonMode = i_CurrentStudent.FirstPriority;
-
-            qualifiedInstructorsIndex = IndexesOfQualifiedInstructors(i_CurrentStudent.RequestedSwimStyle);
-            for (int instructorIndex = 0; instructorIndex < qualifiedInstructorsIndex.Count; instructorIndex++)
+            List<eWeekDay> daysToCheck;
+            for (int instructorIndex = 0; instructorIndex < i_QualifiedInstructorsIndex.Count; instructorIndex++)
             {
-                currentInstructor = r_Instructors[instructorIndex]; // check if ok (modified by value or ref...)
-                daysCurrentInstructorWorks = currentInstructor.DaysCurrentInstructorBookedLesson();
-                if (daysCurrentInstructorWorks.Count != 0)
+                currentInstructor = r_Instructors[i_QualifiedInstructorsIndex[instructorIndex]];
+                if (i_CheckForAnyDay == false)
                 {
-                    // does this 'result' can be modified
-                    result = currentInstructor.InstructorCanBookThisLesson(lessonMode, daysCurrentInstructorWorks); // need to be in amother place, change this loop --> coliision between this list and the if
-                    if (result.Item1 == true) // success! instructor can take lesson in day he works!
+                    daysToCheck = currentInstructor.DaysCurrentInstructorBookedLesson();
+                }
+                else
+                {
+                    daysToCheck = GetAllWeekDays();
+                }
+                if ((i_CheckForAnyDay == false && daysToCheck.Count != 0) || (i_CheckForAnyDay==true))
+                {
+                    result = currentInstructor.InstructorCanBookThisLesson(i_Mode, daysToCheck);
+                    if (result.Item1 == true)
                     {
-                        CreateNewLesson(result, currentInstructor, i_CurrentStudent, lessonMode);
+                        CreateNewLesson(result, currentInstructor, i_Student, i_Mode);
                         return true;
                     }
                 }
             }
-
-            allDaysOfWeek = GetAllWeekDays();
-            for (int instructorIndex = 0; instructorIndex < qualifiedInstructorsIndex.Count; instructorIndex++)
-            {
-                currentInstructor = r_Instructors[instructorIndex]; // check if ok (modified by value or ref...)
-                result = currentInstructor.InstructorCanBookThisLesson(lessonMode, allDaysOfWeek); // need to be in amother place, change this loop --> coliision between this list and the if
-                if (result.Item1 == true) // success! instructor can take lesson in day he works!
-                {
-                    CreateNewLesson(result, currentInstructor, i_CurrentStudent, lessonMode);
-                    return true;
-                }
-            }
-
-            return false; 
+            return false;
         }
 
         public void CreateNewLesson(Tuple<bool, eWeekDay, int> i_LessonData, Instructor i_Instructor, Student i_Student, eLessonMode i_LessonMode)
@@ -193,7 +192,7 @@ namespace PoolPlanLogic
             {
                 if (instructor.InstructorAvailability[(int)newLesson.LessonDay] != null) 
                 {
-                    instructor.SyncInstructorsToPoolSchedule(newLesson); // sync pool schedule with all instructors
+                    instructor.SyncInstructorsToPoolSchedule(newLesson); // Syncs pool schedule with all instructors
                 }
             }
             sortLessonsByStartTime((int)newLesson.LessonDay);
@@ -203,7 +202,7 @@ namespace PoolPlanLogic
         {
             for (int day = 0; day < k_AmountOfDaysInWeek; day++)
             {
-                if(r_WeeklyLessonsSchedule[day] ==null) // to check if neccessary
+                if(r_WeeklyLessonsSchedule[day] ==null)
                 {
                     continue;
                 }
@@ -219,10 +218,8 @@ namespace PoolPlanLogic
                     }
                 }
             }
-
             return false;
         }
-
 
         public List<int> IndexesOfQualifiedInstructors(eSwimStyle i_RequestedSwimStyle)
         {
@@ -235,11 +232,24 @@ namespace PoolPlanLogic
                     if (swimStyle == i_RequestedSwimStyle) // instructor is professionally fit
                     {
                         indexesOfQualifiedInstructors.Add(instructorIndex);
-                        break; // does it fine?
+                        break;
                     }
                 }
             }
             return indexesOfQualifiedInstructors;
+        }
+
+        public int GetTheLessBusyInstructor(List<int> i_IndexesListOfInsturctor)
+        {
+            int min = int.MaxValue, chosenIndex = 0;
+
+            foreach(int index in i_IndexesListOfInsturctor)
+            {
+                if (r_Instructors[index].AmountOfWorkingHours() < min)
+                    chosenIndex = index;
+            }
+
+            return chosenIndex;
         }
 
         public List<eWeekDay> GetAllWeekDays()
@@ -253,7 +263,7 @@ namespace PoolPlanLogic
         }
 
 
-        public int GetInstructorIndexInList(string i_InstructorName)
+        public int GetInstructorIndexInList(string i_InstructorName) // for testing
         {
             int wantedIndex = 0;
             foreach (Instructor instructor in r_Instructors)
@@ -298,13 +308,6 @@ namespace PoolPlanLogic
             Console.WriteLine(counter);
         }
 
-        private List<List<Lesson>> createAvailabilityBoardForInstructor()
-        {
-            return Enumerable.Repeat(default(List<Lesson>), k_AmountOfDaysInWeek).ToList();
-            // NOTE: this function initializing only the main list representing the days!
-            //Therefore --> days that are not available will remain null and will not be allocated!
-        }
-
         public List<Student> RegisteredStudents
         {
             get { return r_RegisteredStudents; }
@@ -318,6 +321,56 @@ namespace PoolPlanLogic
         private void sortLessonsByStartTime(int i_Day)
         {
             r_WeeklyLessonsSchedule[i_Day] = r_WeeklyLessonsSchedule[i_Day].OrderBy(p => p.LessonHour.Start).ToList();
+        }
+
+        public bool DayIsEmpty(int i_Day)
+        {
+            return WeekAgenda[i_Day] == null;
+        }
+
+        public bool WeekIsEmpty()
+        {
+            int emptyDaysCounter = 0;
+
+            for (int day = 0; day < k_AmountOfDaysInWeek; day++)
+            {
+                if (DayIsEmpty(day))
+                {
+                    emptyDaysCounter++;
+                }
+            }
+
+            return emptyDaysCounter == k_AmountOfDaysInWeek;
+        }
+
+        public bool DoesHoursAdditionSyncWithSchedule(eWeekDay i_ChosenDay, TimeRange i_TimeRangeToCheck)
+        {
+            if(r_WeeklyLessonsSchedule[(int)i_ChosenDay] == null)
+            {
+                return true; // no lessons this day --> no collision
+            }
+
+            foreach(Lesson lesson in r_WeeklyLessonsSchedule[(int)i_ChosenDay])
+            {
+                if (lesson.LessonHour.CongruenceInHours(i_TimeRangeToCheck))
+                {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        private List<List<List<TimeRange>>> createInstructorsAvailabilityLists(int number)
+        {
+            return Enumerable.Repeat(default(List<List<TimeRange>>), number).ToList();
+        }
+
+        private List<List<Lesson>> createAvailabilityBoardForInstructor()
+        {
+            return Enumerable.Repeat(default(List<Lesson>), k_AmountOfDaysInWeek).ToList();
+            // NOTE: this function initializing only the main list representing the days!
+            //Therefore --> days that are not available will remain null and will not be allocated!
         }
     }
 }

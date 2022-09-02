@@ -24,15 +24,14 @@ namespace PoolPlanLogic
             r_LessonStyle = i_Style;
             r_LessonMode = i_Mode;
             r_LessonInstructorName = i_InstructorName;
-            r_ParticipatingStudents = new List<Student>(); // init only, adding students - in another function
+            r_ParticipatingStudents = new List<Student>();
             r_lessonLength = setLessonLength();
-            // whats with the lessons hour
         }
 
         private int setLessonLength()
         {
             return r_LessonMode == eLessonMode.Private ?
-                PoolManagement.k_PrivateLessonLength : PoolManagement.k_GroupLessonLength;
+                   PoolManagement.k_PrivateLessonLength : PoolManagement.k_GroupLessonLength;
         }
 
         public int LengthOfLesson
@@ -83,11 +82,11 @@ namespace PoolPlanLogic
 
         public List<string> HourToDisplay
         {
-            get { return setHoursInString(); }
+            get { return ConvertHoursToString(); }
         }
 
 
-        public List<string> setHoursInString()
+        public List<string> ConvertHoursToString()
         {
             List<string> hourRange = new List<string>();
             hourRange.Add(m_LessonAppointedTime.Start.ToString()); // check
@@ -107,12 +106,7 @@ namespace PoolPlanLogic
 
             hourRange.RemoveAt(0);
             hourRange.RemoveAt(0);
-
             return hourRange;
         }
-
-        //public void remove
-
-
     }
 }

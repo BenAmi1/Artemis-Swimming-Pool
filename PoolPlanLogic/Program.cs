@@ -81,9 +81,9 @@ namespace PoolPlanLogic
             pm.addAvailablityToInstructor("Johnny", eWeekDay.Thursday, new TimeRange(1000, 1900));
 
 
-            pm.AssignWeekAgenda();
+            //pm.AssignWeekAgenda();
 
-            pm.testingFunction();
+            //pm.testingFunction();
 
 
             //for instructor

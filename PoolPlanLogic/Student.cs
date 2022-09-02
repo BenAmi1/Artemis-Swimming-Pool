@@ -23,14 +23,12 @@ namespace PoolPlanLogic
             m_RegisteredLessons = new List<Lesson>();
         }
 
-        //test
         public List<Lesson> studentlLessons
         {
             get { return m_RegisteredLessons; }
         }
          
-
-        public void AddLessonToStudentAgenda(Lesson i_NewLessonToStudent) // what happen if i take down the ref
+        public void AddLessonToStudentAgenda(Lesson i_NewLessonToStudent)
         {
             m_RegisteredLessons.Add(i_NewLessonToStudent);
         }
@@ -63,7 +61,7 @@ namespace PoolPlanLogic
 
         public eLessonMode SecondPriority
         {
-            get { return m_StudentLessonMode[1]; } // return the second priority of student
+            get { return m_StudentLessonMode[1]; }
         }
      
     }

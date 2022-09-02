@@ -13,19 +13,16 @@ namespace PoolPlanLogic
         private List<List<TimeRange>> m_InstructorAvailability;
         private List<List<Lesson>> m_InstructorsLessonsSchedule;
 
-        // get weekDaysFromUser function. for each day get also an hours range
-
-        public Instructor(string i_InstructorName, List<eSwimStyle> i_SwimStyles) // other data will be added by functions
+        public Instructor(string i_InstructorName, List<eSwimStyle> i_SwimStyles) 
         {
             r_InstructorName = i_InstructorName;
             m_InstructorStyles = i_SwimStyles;
             m_InstructorAvailability = new List<List<TimeRange>>();
             m_InstructorsLessonsSchedule = new List<List<Lesson>>();
-            m_InstructorAvailability = createAvailabilityBoardForInstructor(); // sets an array of array of Pairs
-            m_InstructorsLessonsSchedule = createLessonsScheduluForInstructor(); // sets an array of array of Lessons
+            m_InstructorAvailability = createAvailabilityBoardForInstructor(); // Sets an array of array of Pairs
+            m_InstructorsLessonsSchedule = createLessonsScheduluForInstructor(); // Sets an array of array of Lessons
         }
 
-        // to delete
         public List<List<Lesson>> instructorLessonsSchedule
         {
             get { return m_InstructorsLessonsSchedule; }
@@ -36,14 +33,15 @@ namespace PoolPlanLogic
             int lessonDayIndex = (int)i_NewLesson.LessonDay;
             int startOfLesson = m_InstructorAvailability[lessonDayIndex][i_TimeRangeIndex].Start;
             int endOfLesson;
+
             if (m_InstructorsLessonsSchedule[lessonDayIndex] == null)
             {
                 m_InstructorsLessonsSchedule[lessonDayIndex] = new List<Lesson>();
             }
-            m_InstructorsLessonsSchedule[lessonDayIndex].Add(i_NewLesson);
 
+            m_InstructorsLessonsSchedule[lessonDayIndex].Add(i_NewLesson);
             endOfLesson= clearLessonFromAvailability(lessonDayIndex, i_TimeRangeIndex, i_NewLesson.LengthOfLesson);
-            i_NewLesson.LessonHour = new TimeRange(startOfLesson, endOfLesson); // set The Hour of the lesson
+            i_NewLesson.LessonHour = new TimeRange(startOfLesson, endOfLesson); // Set The Hour of the lesson
         }
 
         public void SyncInstructorsToPoolSchedule(Lesson i_Lesson)
@@ -75,6 +73,7 @@ namespace PoolPlanLogic
                     m_InstructorAvailability[i_DayIndex].RemoveAt(indexToDelete);
                     availabilityModified = true;
                 }
+
                 indexToDelete++;
                 if (availabilityModified == true)
                 {
@@ -93,9 +92,10 @@ namespace PoolPlanLogic
         {
             int hourRangeStartTime = m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start;
             int endTimOfLesson = 0;
+
             if(hourRangeStartTime + i_LessonLength >= ((hourRangeStartTime / 100)*100)+60)
             {
-                // we pass to the next hour
+                // Passing to the next hour.
                 m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start = hourRangeStartTime + i_LessonLength + 40;
             }
             else
@@ -107,7 +107,7 @@ namespace PoolPlanLogic
             if (m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].Start ==
                m_InstructorAvailability[i_DayIndex][i_TimeRangeIndex].End)
             {
-                m_InstructorAvailability[i_DayIndex].RemoveAt(i_TimeRangeIndex); // The whole hour is filled 
+                m_InstructorAvailability[i_DayIndex].RemoveAt(i_TimeRangeIndex); // The whole hour is filled: remove it
             }
 
             sortListByStartTime(i_DayIndex);
@@ -149,28 +149,22 @@ namespace PoolPlanLogic
             foreach (eWeekDay currentDay in i_Days)
             {
                 currentDayIndex = (int)currentDay;
-                
                 if (m_InstructorAvailability[currentDayIndex] == null) // the worker in not in the pool that day
-                {
                     continue;
-                }
                 for (int TimeRange = 0; TimeRange < m_InstructorAvailability[currentDayIndex].Count; TimeRange++)
                 {
                     // are there 45/60 minutes aviailable that day
                     // ensuring that the lesson will be early as possible today due to the sorted time-ranges
-                    if (m_InstructorAvailability[currentDayIndex][TimeRange].HasTimeRangeForLesson(i_LessonMode)) // success
+                    if (m_InstructorAvailability[currentDayIndex][TimeRange].HasTimeRangeForLesson(i_LessonMode))
                     {
-                        // to add: and if pool is vaccant also!
                         result = new Tuple<bool, eWeekDay, int>(true, (eWeekDay)currentDayIndex, TimeRange);
                         return result;
                     }
                 }
             }
-
             result = new Tuple<bool, eWeekDay, int>(false, (eWeekDay)0, 0); // not found!
             return result;
         }
-
 
         public TimeRange IsAvailableToBookALesson(eWeekDay i_Day, TimeRange i_HoursRangeToCheck)
         {
@@ -190,6 +184,23 @@ namespace PoolPlanLogic
                 }
                 return null;
             }
+        }
+
+        public int AmountOfWorkingHours()
+        {
+            int counter = 0;
+            for (int day = 0; day < PoolManagement.k_AmountOfDaysInWeek; day++)
+            {
+                if (m_InstructorsLessonsSchedule[day] == null)
+                    continue;
+
+                foreach (Lesson lesson in m_InstructorsLessonsSchedule[day])
+                {
+                    counter += lesson.LengthOfLesson;
+                }
+            }
+
+            return counter;
         }
 
         public bool IsScheduledForThisDay(eWeekDay i_Day)
@@ -227,9 +238,5 @@ namespace PoolPlanLogic
             // NOTE: this function initializing only the main list representing the days!
             //Therefore --> days that are not booked with lesson will remain null and will not be allocated!
         }
-
-
-
-
     }
 }
