@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace PoolPlanLogic
 {
     public class Lesson
     {
+        private TimeRange m_LessonAppointedTime;
         private readonly eWeekDay r_LessonDay;
-        private TimeRange m_LessonAppointedTime; 
         private readonly int r_lessonLength;
         private readonly TimeRange r_LessonInTimeRange;
         private readonly eSwimStyle r_LessonStyle;

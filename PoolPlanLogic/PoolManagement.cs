@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PoolPlanLogic
 {
@@ -46,7 +44,7 @@ namespace PoolPlanLogic
             }
         }
 
-        public void AssignWeekAgenda(List<Student> i_ListOfStudents )
+        public void AssignWeekAgenda(List<Student> i_ListOfStudents)
         {
             eLessonMode lessonMode = eLessonMode.Group;
             for (int iteration = 1; iteration <= 2; iteration++)
@@ -81,8 +79,8 @@ namespace PoolPlanLogic
                 else
                 {
                     if (!TryToCreateNewLessonAndAssignStudent(i_CurrentStudent, i_LessonMode) &&
-                                                             i_CurrentStudent.SecondPriority == eLessonMode.None &&
-                                                             !r_ConflictedStudents.Contains(i_CurrentStudent))
+                                                              i_CurrentStudent.SecondPriority == eLessonMode.None &&
+                                                              !r_ConflictedStudents.Contains(i_CurrentStudent))
                     {
                         r_ConflictedStudents.Add(i_CurrentStudent);
                     }
@@ -139,9 +137,13 @@ namespace PoolPlanLogic
             qualifiedInstructorsIndex = IndexesOfQualifiedInstructors(i_CurrentStudent.RequestedSwimStyle);
 
             if (TryBookLessonOnIdealDay(qualifiedInstructorsIndex, i_CurrentStudent, lessonMode, false))
+            {
                 return true;
+            }
             else
+            {
                 return TryBookLessonOnIdealDay(qualifiedInstructorsIndex, i_CurrentStudent, lessonMode, true);
+            }
         }
 
 
@@ -163,7 +165,7 @@ namespace PoolPlanLogic
                 }
                 if ((i_CheckForAnyDay == false && daysToCheck.Count != 0) || (i_CheckForAnyDay==true))
                 {
-                    result = currentInstructor.InstructorCanBookThisLesson(i_Mode, daysToCheck);
+                    result = currentInstructor.DoesInstructorCanBookThisLesson(i_Mode, daysToCheck);
                     if (result.Item1 == true)
                     {
                         CreateNewLesson(result, currentInstructor, i_Student, i_Mode);
@@ -174,7 +176,8 @@ namespace PoolPlanLogic
             return false;
         }
 
-        public void CreateNewLesson(Tuple<bool, eWeekDay, int> i_LessonData, Instructor i_Instructor, Student i_Student, eLessonMode i_LessonMode)
+        public void CreateNewLesson(Tuple<bool, eWeekDay, int> i_LessonData, Instructor i_Instructor, Student i_Student,
+                                    eLessonMode i_LessonMode)
         {
             Lesson newLesson;
             newLesson = new Lesson(i_LessonData.Item2,
@@ -187,6 +190,7 @@ namespace PoolPlanLogic
             {
                 r_WeeklyLessonsSchedule[(int)i_LessonData.Item2] = new List<Lesson>();
             }
+
             r_WeeklyLessonsSchedule[(int)i_LessonData.Item2].Add(newLesson); 
             foreach(Instructor instructor in r_Instructors)
             {
@@ -241,12 +245,16 @@ namespace PoolPlanLogic
 
         public int GetTheLessBusyInstructor(List<int> i_IndexesListOfInsturctor)
         {
-            int min = int.MaxValue, chosenIndex = 0;
+            int min = int.MaxValue, chosenIndex = 0, workingHours = 0;
 
             foreach(int index in i_IndexesListOfInsturctor)
             {
-                if (r_Instructors[index].AmountOfWorkingHours() < min)
+                workingHours = r_Instructors[index].AmountOfWorkingHours();
+                if (workingHours < min)
+                {
+                    min = workingHours;
                     chosenIndex = index;
+                }
             }
 
             return chosenIndex;
@@ -261,7 +269,6 @@ namespace PoolPlanLogic
             }
             return allOperatingWeekDays;
         }
-
 
         public int GetInstructorIndexInList(string i_InstructorName) // for testing
         {
@@ -308,6 +315,11 @@ namespace PoolPlanLogic
             Console.WriteLine(counter);
         }
 
+        public Student LasStudentInList
+        {
+            get { return RegisteredStudents[RegisteredStudents.Count - 1]; }
+        }
+
         public List<Student> RegisteredStudents
         {
             get { return r_RegisteredStudents; }
@@ -343,7 +355,7 @@ namespace PoolPlanLogic
             return emptyDaysCounter == k_AmountOfDaysInWeek;
         }
 
-        public bool DoesHoursAdditionSyncWithSchedule(eWeekDay i_ChosenDay, TimeRange i_TimeRangeToCheck)
+        public bool IsSyncedWithWeekSchedule(eWeekDay i_ChosenDay, TimeRange i_TimeRangeToCheck)
         {
             if(r_WeeklyLessonsSchedule[(int)i_ChosenDay] == null)
             {

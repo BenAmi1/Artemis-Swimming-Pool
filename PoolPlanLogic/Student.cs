@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace PoolPlanLogic
 {
@@ -10,27 +6,27 @@ namespace PoolPlanLogic
     {
         private readonly string r_StudentFirstName;
         private readonly string r_StudentLastName;
-        private eSwimStyle m_StudentSwimStyle; 
-        private readonly List<eLessonMode> m_StudentLessonMode;
-        private List<Lesson> m_RegisteredLessons;
+        private readonly eSwimStyle r_StudentSwimStyle;
+        private readonly List<eLessonMode> r_StudentLessonMode;
+        private readonly List<Lesson> r_RegisteredLessons;
 
         public Student(string i_FirstName, string i_LastName, eSwimStyle i_Style, List<eLessonMode> i_Mode)
         {
             r_StudentFirstName = i_FirstName;
             r_StudentLastName = i_LastName;
-            m_StudentSwimStyle = i_Style;
-            m_StudentLessonMode = i_Mode;
-            m_RegisteredLessons = new List<Lesson>();
+            r_StudentSwimStyle = i_Style;
+            r_StudentLessonMode = i_Mode;
+            r_RegisteredLessons = new List<Lesson>();
         }
 
         public List<Lesson> studentlLessons
         {
-            get { return m_RegisteredLessons; }
+            get { return r_RegisteredLessons; }
         }
          
         public void AddLessonToStudentAgenda(Lesson i_NewLessonToStudent)
         {
-            m_RegisteredLessons.Add(i_NewLessonToStudent);
+            r_RegisteredLessons.Add(i_NewLessonToStudent);
         }
 
         public string FirstName
@@ -45,23 +41,22 @@ namespace PoolPlanLogic
 
         public eSwimStyle RequestedSwimStyle
         {
-            get { return m_StudentSwimStyle; }
-            set { m_StudentSwimStyle = value; }
+            get { return r_StudentSwimStyle; }
         }
 
         public eLessonMode FirstPriority
         {
-            get { return m_StudentLessonMode[0]; }
+            get { return r_StudentLessonMode[0]; }
         }
 
         public bool IsBooked()
         {
-            return m_RegisteredLessons.Count > 0;
+            return r_RegisteredLessons.Count > 0;
         }
 
         public eLessonMode SecondPriority
         {
-            get { return m_StudentLessonMode[1]; }
+            get { return r_StudentLessonMode[1]; }
         }
      
     }

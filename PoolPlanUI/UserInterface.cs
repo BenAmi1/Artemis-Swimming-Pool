@@ -1,9 +1,6 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PoolPlanLogic;
 
 namespace PoolPlanUI
@@ -33,6 +30,7 @@ namespace PoolPlanUI
         public void MainMenu()
         {
             int userInput = (int)eMenuOptions.UnDefined;
+
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Welcome to Asgard's Pool!\n");
             while (userInput != (int)eMenuOptions.Exit)
@@ -90,7 +88,7 @@ namespace PoolPlanUI
             string studentFirstName, studentLastName;
             eSwimStyle swimStyle;
             List<eLessonMode> lessonModePriorities;
-
+            
             if(m_AgendaGenerated == true)
             {
                 if(r_RunPool.ConflictedStudents.Count > 0) // There are already conflicted students!
@@ -111,6 +109,11 @@ namespace PoolPlanUI
             Console.Clear();
             r_RunPool.AddStudent(studentFirstName, studentLastName, swimStyle, lessonModePriorities);
             Console.WriteLine(@"{0} {1} registered successfully!", studentFirstName, studentLastName);
+            if(m_AgendaGenerated==true)
+            {
+                r_RunPool.AssignFirstPriorities(r_RunPool.LasStudentInList, r_RunPool.LasStudentInList.FirstPriority);
+                r_RunPool.AssignSecondPriorities(r_RunPool.LasStudentInList, r_RunPool.LasStudentInList.FirstPriority);
+            }
             //System.Threading.Thread.Sleep(500); // pause before clear screen
         }
 
@@ -118,13 +121,6 @@ namespace PoolPlanUI
         {
             string firstName;
             List<eSwimStyle> swimStyles;
-
-            //if (m_AgendaGenerated == true)
-            //{
-            //    Console.WriteLine("Unable to add more instructors. Week shcedule have been generated already");
-            //    PressAnyKeyToConitnue();
-            //    return;
-            //}
 
             Console.WriteLine("Please insert the instructor's first name:");
             firstName = getName();
@@ -399,12 +395,14 @@ namespace PoolPlanUI
                     }
                     verticaloffset = Console.CursorTop;
                     if (verticaloffset > maxVerticalOffset)
+                    {
                         maxVerticalOffset = verticaloffset;
+                    }
                     screenHorizontalOffset += 24;
                 }
             }
-            Console.SetCursorPosition(0, maxVerticalOffset+2);
 
+            Console.SetCursorPosition(0, maxVerticalOffset+2);
             PressAnyKeyToConitnue();
         }
 
@@ -467,8 +465,12 @@ namespace PoolPlanUI
                 {
                     if (styleCounter != 0)
                     {
-                        Console.WriteLine(@"{0} {1} lessons", styleCounter, ((eSwimStyle)iteration).ToString());
-
+                        if(lessonMode==0) // Grou[: [X students != X lessons] often, as 3 student can assign a lesson
+                        {
+                            Console.WriteLine(@"{0} {1} students", styleCounter, ((eSwimStyle)iteration).ToString());
+                        }
+                        else
+                            Console.WriteLine(@"{0} {1} lessons", styleCounter, ((eSwimStyle)iteration).ToString());
                     }
                     iteration++;
                 }
@@ -502,7 +504,7 @@ namespace PoolPlanUI
                 {
                     qualifiedInstructorIndexes = r_RunPool.IndexesOfQualifiedInstructors((eSwimStyle)style);
                     chosenInstructorIndex = r_RunPool.GetTheLessBusyInstructor(qualifiedInstructorIndexes);
-                    additionsToInstructors[chosenInstructorIndex] = timeAdditionToStyle;
+                    additionsToInstructors[chosenInstructorIndex] += timeAdditionToStyle;
                 }
 
                 timeAdditionToStyle = 0;
@@ -520,12 +522,53 @@ namespace PoolPlanUI
                 {
                     hours = (i_AdditionsToInstructors[i] - (i_AdditionsToInstructors[i] % 60)) / 60;
                     minutes = i_AdditionsToInstructors[i] % 60;
-                    Console.WriteLine("Consider adding {0} {1} hours and {2} minutes",
+                    Console.WriteLine(@"Consider adding {0} {1} hours and {2} minutes",
                                       r_RunPool.InstructorsList[i].InstructorName,
                                       hours, minutes);
                 }
             }
+
+            suggestSpecificTimeRange();
             Console.WriteLine();
+        }
+
+        private void suggestSpecificTimeRange()
+        {
+            Console.WriteLine("\nSuggestions:");
+            List<Lesson> listOfLessons;
+            for (int day = 0; day < k_AmountOfWorkingDays; day++)
+            {
+                if(r_RunPool.WeekAgenda[day]==null)
+                {
+                    Console.WriteLine(@"{0}, 8:00 - 20:00", ((eWeekDay)day).ToString());
+                }
+                else
+                {
+                    listOfLessons = r_RunPool.WeekAgenda[day];
+                    if (listOfLessons[0].LessonHour.Start - 800 > 100)
+                    {
+                        Console.WriteLine(@"{0}, 8:00 - {1}", ((eWeekDay)day),
+                                                              listOfLessons[0].HourToDisplay[0]);
+                    }
+
+                    for (int index=0; index < r_RunPool.WeekAgenda[day].Count-1; index++) 
+                    {
+                        if(listOfLessons[index+1].LessonHour.Start - listOfLessons[index].LessonHour.End >100)
+                        {
+                            Console.WriteLine(@"{0}, {1} - {2}", ((eWeekDay)day),
+                                                                 listOfLessons[index].HourToDisplay[1],
+                                                                 listOfLessons[index + 1].HourToDisplay[0]);
+                        }
+                    }
+
+                    if (2000 - listOfLessons[listOfLessons.Count-1].LessonHour.End > 100)
+                    {
+                        Console.WriteLine(@"{0}, {1} - 20:00", ((eWeekDay)day),
+                                                                listOfLessons[listOfLessons.Count - 1].HourToDisplay[1]); 
+                    }
+                }
+            }
+
         }
 
         private void PressAnyKeyToConitnue()
@@ -674,7 +717,7 @@ namespace PoolPlanUI
 
                 if (m_AgendaGenerated == true)
                 {
-                    if (!r_RunPool.DoesHoursAdditionSyncWithSchedule((eWeekDay)(chosenDay), newPair))
+                    if (!r_RunPool.IsSyncedWithWeekSchedule((eWeekDay)(chosenDay), newPair))
                     {
                         Console.WriteLine("Unable. Hours collides with scheduled lessons!");
                         PressAnyKeyToConitnue();
