@@ -11,23 +11,63 @@ namespace PoolPlanLogic
         private readonly List<List<Lesson>> r_WeeklyLessonsSchedule;
         private readonly List<Student> r_ConflictedStudents;
         private const int k_NotFound = -1;
-        public const int k_PrivateLessonLength = 45;
-        public const int k_GroupLessonLength = 60;
-        public const int k_AmountOfDaysInWeek = 5;
-        public const int k_GroupLessonCapacity = 3;
+        public  const int k_PrivateLessonLength = 45;
+        public  const int k_GroupLessonLength = 60;
+        public  const int k_AmountOfDaysInWeek = 5;
+        public  const int k_GroupLessonCapacity = 3;
 
         public PoolManagement()
         {
             r_RegisteredStudents = new List<Student>();
             r_Instructors = new List<Instructor>();
-            r_WeeklyLessonsSchedule = new List<List<Lesson>>(); // need to new list<lesson> and Lesson
-            r_WeeklyLessonsSchedule = createAvailabilityBoardForInstructor(); // sets an array of array of Pairs
+            r_WeeklyLessonsSchedule = new List<List<Lesson>>(); 
+            r_WeeklyLessonsSchedule = createAvailabilityBoardForInstructor(); 
             r_ConflictedStudents = new List<Student>();
         }
 
         public List<List<Lesson>> WeekAgenda
         {
             get { return r_WeeklyLessonsSchedule; }
+        }
+
+        public List<Instructor> InstructorsList
+        {
+            get { return r_Instructors; }
+        }
+
+        public List<Student> RegisteredStudents
+        {
+            get { return r_RegisteredStudents; }
+        }
+
+        public List<Student> ConflictedStudents
+        {
+            get { return r_ConflictedStudents; }
+        }
+
+        public Student LasStudentInList
+        {
+            get { return RegisteredStudents[RegisteredStudents.Count - 1]; }
+        }
+
+        public void AddStudent(string i_FirstName, string i_LastName, eSwimStyle i_Style, List<eLessonMode> i_Mode)
+        {
+            r_RegisteredStudents.Add(new Student(i_FirstName, i_LastName, i_Style, i_Mode));
+        }
+
+        public void AddInstructorToStaff(string i_InstructorName, List<eSwimStyle> i_SwimStyles)
+        {
+            r_Instructors.Add(new Instructor(i_InstructorName, i_SwimStyles));
+        }
+
+        private void sortLessonsByStartTime(int i_Day)
+        {
+            r_WeeklyLessonsSchedule[i_Day] = r_WeeklyLessonsSchedule[i_Day].OrderBy(p => p.LessonHour.Start).ToList();
+        }
+
+        public bool DayIsEmpty(int i_Day)
+        {
+            return WeekAgenda[i_Day] == null;
         }
 
         public bool addAvailablityToInstructor(string i_InstructorName, eWeekDay i_Day, TimeRange i_RangeOfHours)
@@ -44,10 +84,11 @@ namespace PoolPlanLogic
             }
         }
 
-        public void AssignWeekAgenda(List<Student> i_ListOfStudents)
+        public void AssignWeekAgenda(List<Student> i_ListOfStudents) // Creating schedule for next week
         {
             eLessonMode lessonMode = eLessonMode.Group;
-            for (int iteration = 1; iteration <= 2; iteration++)
+
+            for (int iteration = 1; iteration <= 2; iteration++) 
             {
                 foreach (Student currentStudent in i_ListOfStudents)
                 {
@@ -146,8 +187,8 @@ namespace PoolPlanLogic
             }
         }
 
-
-        private bool TryBookLessonOnIdealDay(List<int> i_QualifiedInstructorsIndex, Student i_Student, eLessonMode i_Mode, bool i_CheckForAnyDay)
+        private bool TryBookLessonOnIdealDay(List<int> i_QualifiedInstructorsIndex, Student i_Student,
+                                             eLessonMode i_Mode, bool i_CheckForAnyDay)
         {
             Tuple<bool, eWeekDay, int> result;
             Instructor currentInstructor;
@@ -163,6 +204,7 @@ namespace PoolPlanLogic
                 {
                     daysToCheck = GetAllWeekDays();
                 }
+
                 if ((i_CheckForAnyDay == false && daysToCheck.Count != 0) || (i_CheckForAnyDay==true))
                 {
                     result = currentInstructor.DoesInstructorCanBookThisLesson(i_Mode, daysToCheck);
@@ -284,20 +326,6 @@ namespace PoolPlanLogic
             return k_NotFound;
         }
 
-        public void AddStudent(string i_FirstName, string i_LastName, eSwimStyle i_Style, List<eLessonMode> i_Mode)
-        {
-            r_RegisteredStudents.Add(new Student(i_FirstName, i_LastName, i_Style, i_Mode));
-        }
-
-        public void AddInstructorToStaff(string i_InstructorName, List<eSwimStyle> i_SwimStyles)
-        {
-            r_Instructors.Add(new Instructor(i_InstructorName, i_SwimStyles));
-        }
-
-        public List<Instructor> InstructorsList
-        {
-            get { return r_Instructors; }
-        }
 
         public void testingFunction()
         {
@@ -313,31 +341,6 @@ namespace PoolPlanLogic
                 }
             }
             Console.WriteLine(counter);
-        }
-
-        public Student LasStudentInList
-        {
-            get { return RegisteredStudents[RegisteredStudents.Count - 1]; }
-        }
-
-        public List<Student> RegisteredStudents
-        {
-            get { return r_RegisteredStudents; }
-        }
-
-        public List<Student> ConflictedStudents
-        {
-            get { return r_ConflictedStudents; }
-        }
-
-        private void sortLessonsByStartTime(int i_Day)
-        {
-            r_WeeklyLessonsSchedule[i_Day] = r_WeeklyLessonsSchedule[i_Day].OrderBy(p => p.LessonHour.Start).ToList();
-        }
-
-        public bool DayIsEmpty(int i_Day)
-        {
-            return WeekAgenda[i_Day] == null;
         }
 
         public bool WeekIsEmpty()

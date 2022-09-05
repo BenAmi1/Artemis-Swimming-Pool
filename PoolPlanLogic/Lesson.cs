@@ -4,14 +4,15 @@ namespace PoolPlanLogic
 {
     public class Lesson
     {
-        private TimeRange m_LessonAppointedTime;
-        private readonly eWeekDay r_LessonDay;
         private readonly int r_lessonLength;
-        private readonly TimeRange r_LessonInTimeRange;
+        private readonly string r_LessonInstructorName;
         private readonly eSwimStyle r_LessonStyle;
         private readonly eLessonMode r_LessonMode;
-        private readonly string r_LessonInstructorName;
+        private readonly eWeekDay r_LessonDay;
+        private TimeRange m_LessonAppointedTime;
         private readonly List<Student> r_ParticipatingStudents;
+        private readonly TimeRange r_LessonInTimeRange;
+
 
         public Lesson(eWeekDay i_Day, TimeRange i_Time, eSwimStyle i_Style, eLessonMode i_Mode, string i_InstructorName)
         {
@@ -80,7 +81,6 @@ namespace PoolPlanLogic
         {
             get { return ConvertHoursToString(); }
         }
-
 
         public List<string> ConvertHoursToString()
         {

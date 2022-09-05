@@ -215,7 +215,6 @@ namespace PoolPlanLogic
             get { return r_InstructorAvailability; }
         }
 
-
         public List<eSwimStyle> InstructorsSwimStyles
         {
             get { return r_InstructorStyles; }
