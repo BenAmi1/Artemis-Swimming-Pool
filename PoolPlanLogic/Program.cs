@@ -46,37 +46,9 @@ namespace PoolPlanLogic
 
 
             //ADDING INSTRUCTORS
-            List<eSwimStyle> eSwimStylesYOTAM = new List<eSwimStyle>();
-            eSwimStylesYOTAM.Add(eSwimStyle.Chest);
-            eSwimStylesYOTAM.Add(eSwimStyle.Hatira);
-            eSwimStylesYOTAM.Add(eSwimStyle.Butterfly);
 
-            List<eSwimStyle> eSwimStylesYONY = new List<eSwimStyle>();
-            eSwimStylesYONY.Add(eSwimStyle.Chest);
-            eSwimStylesYONY.Add(eSwimStyle.Butterfly);
 
-            List<eSwimStyle> eSwimStylesJOHNNY = new List<eSwimStyle>();
-            eSwimStylesJOHNNY.Add(eSwimStyle.Chest);
-            eSwimStylesJOHNNY.Add(eSwimStyle.Hatira);
-            eSwimStylesJOHNNY.Add(eSwimStyle.Butterfly);
-
-            pm.AddInstructorToStaff("Yotam", eSwimStylesYOTAM);
-            pm.AddInstructorToStaff("Yoni", eSwimStylesYONY);
-            pm.AddInstructorToStaff("Johnny", eSwimStylesJOHNNY);
-            Console.WriteLine("INSTRUCTORS added");
-
-            // adding constraints to instructors
-            pm.addAvailablityToInstructor("Yotam", eWeekDay.Monday, new TimeRange(1600, 2000)); //
-            pm.addAvailablityToInstructor("Yotam", eWeekDay.Thursday, new TimeRange(1600, 2000));
-            pm.addAvailablityToInstructor("Yoni", eWeekDay.Monday, new TimeRange(1559,1800)); /// check
-
-            pm.addAvailablityToInstructor("Yoni", eWeekDay.Tuesday, new TimeRange(800, 1500));
-            pm.addAvailablityToInstructor("Yoni", eWeekDay.Wedensday, new TimeRange(800, 1500));
-            pm.addAvailablityToInstructor("Yoni", eWeekDay.Thursday, new TimeRange(800, 1500));
-            pm.addAvailablityToInstructor("Johnny", eWeekDay.Sunday, new TimeRange(1000, 1900));
-            pm.addAvailablityToInstructor("Johnny", eWeekDay.Tuesday, new TimeRange(1000, 1900));
-            pm.addAvailablityToInstructor("Johnny", eWeekDay.Thursday, new TimeRange(1000, 1900));
-
+    
 
             //pm.AssignWeekAgenda();
 

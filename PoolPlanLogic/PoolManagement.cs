@@ -7,7 +7,7 @@ namespace PoolPlanLogic
     public class PoolManagement
     {
         private readonly List<Student> r_RegisteredStudents;
-        private readonly List<Instructor> r_Instructors;
+        private List<Instructor> m_Instructors;
         private readonly List<List<Lesson>> r_WeeklyLessonsSchedule;
         private readonly List<Student> r_ConflictedStudents;
         private const int k_NotFound = -1;
@@ -19,7 +19,7 @@ namespace PoolPlanLogic
         public PoolManagement()
         {
             r_RegisteredStudents = new List<Student>();
-            r_Instructors = new List<Instructor>();
+            m_Instructors = new List<Instructor>();
             r_WeeklyLessonsSchedule = new List<List<Lesson>>(); 
             r_WeeklyLessonsSchedule = createAvailabilityBoardForInstructor(); 
             r_ConflictedStudents = new List<Student>();
@@ -32,7 +32,7 @@ namespace PoolPlanLogic
 
         public List<Instructor> InstructorsList
         {
-            get { return r_Instructors; }
+            get { return m_Instructors; }
         }
 
         public List<Student> RegisteredStudents
@@ -55,27 +55,30 @@ namespace PoolPlanLogic
             r_RegisteredStudents.Add(new Student(i_FirstName, i_LastName, i_Style, i_Mode));
         }
 
-        public void AddInstructorToStaff(string i_InstructorName, List<eSwimStyle> i_SwimStyles)
+        public void AddInstructorToStaff(string i_InstructorName, List<eSwimStyle> i_SwimStyles) // adding instructor
         {
-            r_Instructors.Add(new Instructor(i_InstructorName, i_SwimStyles));
+            m_Instructors.Add(new Instructor(i_InstructorName, i_SwimStyles));
+            m_Instructors = m_Instructors.OrderBy(p => p.InstructorsSwimStyles.Count).ToList();
         }
 
-        private void sortLessonsByStartTime(int i_Day)
+        private void sortLessonsByStartTime(int i_Day) // sorting lessons list, by start time of lesson
         {
             r_WeeklyLessonsSchedule[i_Day] = r_WeeklyLessonsSchedule[i_Day].OrderBy(p => p.LessonHour.Start).ToList();
         }
 
-        public bool DayIsEmpty(int i_Day)
+        public bool DayIsEmpty(int i_Day) // is that day contains no lessons
         {
             return WeekAgenda[i_Day] == null;
         }
 
         public bool addAvailablityToInstructor(string i_InstructorName, eWeekDay i_Day, TimeRange i_RangeOfHours)
         {
+            //Assigning available hours to instructor
             int instructorIndex = GetInstructorIndexInList(i_InstructorName);
+
             if (instructorIndex != k_NotFound)
             {
-                r_Instructors[instructorIndex].AddAvailability(i_Day, i_RangeOfHours);
+                m_Instructors[instructorIndex].AddAvailability(i_Day, i_RangeOfHours);
                 return true;
             }
             else
@@ -146,8 +149,7 @@ namespace PoolPlanLogic
             }
         }
 
-
-        public List<List<int>> HandleConflicts()
+        public List<List<int>> HandleConflicts() // Get conflicts: students who could not register a lesson
         {
             List<List<int>> conflicts = new List<List<int>>();
             conflicts = Enumerable.Repeat(default(List<int>), 2).ToList();
@@ -173,6 +175,7 @@ namespace PoolPlanLogic
 
         public bool TryToCreateNewLessonAndAssignStudent(Student i_CurrentStudent, eLessonMode i_LessonMode)
         {
+            // Trying to book a lesson, on a busy day, or in any other day as second priority
             List<int> qualifiedInstructorsIndex;
             eLessonMode lessonMode = i_CurrentStudent.FirstPriority;
             qualifiedInstructorsIndex = IndexesOfQualifiedInstructors(i_CurrentStudent.RequestedSwimStyle);
@@ -193,16 +196,17 @@ namespace PoolPlanLogic
             Tuple<bool, eWeekDay, int> result;
             Instructor currentInstructor;
             List<eWeekDay> daysToCheck;
+
             for (int instructorIndex = 0; instructorIndex < i_QualifiedInstructorsIndex.Count; instructorIndex++)
             {
-                currentInstructor = r_Instructors[i_QualifiedInstructorsIndex[instructorIndex]];
+                currentInstructor = m_Instructors[i_QualifiedInstructorsIndex[instructorIndex]];
                 if (i_CheckForAnyDay == false)
                 {
                     daysToCheck = currentInstructor.DaysCurrentInstructorBookedLesson();
                 }
                 else
                 {
-                    daysToCheck = GetAllWeekDays();
+                    daysToCheck = GetAllWeekDays(); // unable to find a busy day, let's try to book on any day
                 }
 
                 if ((i_CheckForAnyDay == false && daysToCheck.Count != 0) || (i_CheckForAnyDay==true))
@@ -228,13 +232,13 @@ namespace PoolPlanLogic
             i_Student.AddLessonToStudentAgenda(newLesson);
             i_Instructor.AddLessonToInstructor(newLesson, i_LessonData.Item3);
             newLesson.AddStudentToLesson(i_Student);
-            if(r_WeeklyLessonsSchedule[(int)i_LessonData.Item2] == null)
+            if(r_WeeklyLessonsSchedule[(int)i_LessonData.Item2] == null) // setting new list of lesson on that day
             {
                 r_WeeklyLessonsSchedule[(int)i_LessonData.Item2] = new List<Lesson>();
             }
 
-            r_WeeklyLessonsSchedule[(int)i_LessonData.Item2].Add(newLesson); 
-            foreach(Instructor instructor in r_Instructors)
+            r_WeeklyLessonsSchedule[(int)i_LessonData.Item2].Add(newLesson); // adding new lesson on that day 
+            foreach(Instructor instructor in m_Instructors)
             {
                 if (instructor.InstructorAvailability[(int)newLesson.LessonDay] != null) 
                 {
@@ -244,8 +248,9 @@ namespace PoolPlanLogic
             sortLessonsByStartTime((int)newLesson.LessonDay);
         }
 
-        public bool AttemptToAssignToExistentLesson(Student i_CurrentStudent)
+        public bool AttemptToAssignToExistentLesson(Student i_CurrentStudent) 
         {
+            // Try to assign student to group lesson that already run
             for (int day = 0; day < k_AmountOfDaysInWeek; day++)
             {
                 if(r_WeeklyLessonsSchedule[day] ==null)
@@ -269,11 +274,12 @@ namespace PoolPlanLogic
 
         public List<int> IndexesOfQualifiedInstructors(eSwimStyle i_RequestedSwimStyle)
         {
+            // Return the indexes of the instructor able to teach that specific swimming style
             List<int> indexesOfQualifiedInstructors = new List<int>();
 
-            for (int instructorIndex = 0; instructorIndex < r_Instructors.Count; instructorIndex++)
+            for (int instructorIndex = 0; instructorIndex < m_Instructors.Count; instructorIndex++)
             {
-                foreach (eSwimStyle swimStyle in r_Instructors[instructorIndex].InstructorsSwimStyles)
+                foreach (eSwimStyle swimStyle in m_Instructors[instructorIndex].InstructorsSwimStyles)
                 {
                     if (swimStyle == i_RequestedSwimStyle) // instructor is professionally fit
                     {
@@ -291,7 +297,7 @@ namespace PoolPlanLogic
 
             foreach(int index in i_IndexesListOfInsturctor)
             {
-                workingHours = r_Instructors[index].AmountOfWorkingHours();
+                workingHours = m_Instructors[index].AmountOfWorkingHours();
                 if (workingHours < min)
                 {
                     min = workingHours;
@@ -315,7 +321,7 @@ namespace PoolPlanLogic
         public int GetInstructorIndexInList(string i_InstructorName) // for testing
         {
             int wantedIndex = 0;
-            foreach (Instructor instructor in r_Instructors)
+            foreach (Instructor instructor in m_Instructors)
             {
                 if (instructor.InstructorName == i_InstructorName)
                 {
@@ -326,11 +332,10 @@ namespace PoolPlanLogic
             return k_NotFound;
         }
 
-
         public void testingFunction()
         {
             int counter = 0;
-            foreach (Instructor instructor in r_Instructors)
+            foreach (Instructor instructor in m_Instructors)
             {
                 foreach (List<Lesson> lst in instructor.instructorLessonsSchedule)
                 {

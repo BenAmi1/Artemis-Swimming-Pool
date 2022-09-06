@@ -10,7 +10,7 @@ namespace PoolPlanUI
         private readonly PoolManagement r_RunPool;
         private readonly int r_AmountOfSwimStyles;
         private readonly int r_MenuOptionsSize;
-        private const int k_AmountOfWorkingDays = 5;
+        private const int k_AmountOfWorkingDays = PoolManagement.k_AmountOfDaysInWeek;
         private const string k_Blank = " ";
         private const int k_CurserHorizontalOffset = 24;
         private bool m_AgendaGenerated = false;
@@ -20,11 +20,15 @@ namespace PoolPlanUI
             r_RunPool = new PoolManagement();
             r_AmountOfSwimStyles = Enum.GetNames(typeof(eSwimStyle)).Length;
             r_MenuOptionsSize = Enum.GetNames(typeof(eMenuOptions)).Length -2; // Except 'exit', 'unfefined'
-            if (i_Mode == "admin")
+            if (i_Mode == "test1")
             {
-                insertionByForce();
+                TestingFunction1();
             }
-
+            else if(i_Mode == "test2")
+            {
+                TestingFunction2();
+            }
+            Console.Clear();
             MainMenu();
         }
 
@@ -129,12 +133,100 @@ namespace PoolPlanUI
             r_RunPool.AddInstructorToStaff(firstName, swimStyles);
             Console.WriteLine(@"{0} added successfully to the stuff of the pool!", firstName);
             Console.Clear();
-            addAvailabilityToInstructor(r_RunPool.InstructorsList[r_RunPool.InstructorsList.Count - 1]);
+            addAvailabilityToInstructor(r_RunPool.InstructorsList.Find(e => e.InstructorName == firstName));
 
             if (m_AgendaGenerated == true)
             {
                 checkIfHoursAdditionHelped();
             }
+        }
+
+        private void addAvailabilityToExistingInstructor()
+        {
+            int chosenInstructorIndex;
+
+            Console.WriteLine("Please Choose one of the following instructors:\n");
+            for (int i = 0; i < r_RunPool.InstructorsList.Count; i++)
+            {
+                Console.WriteLine(@"Press ({0}) for {1}", i + 1, r_RunPool.InstructorsList[i].InstructorName);
+            }
+
+            chosenInstructorIndex = getNumber(1, r_RunPool.InstructorsList.Count) - 1;
+            Console.Clear();
+            addDaysAndHours(r_RunPool.InstructorsList[chosenInstructorIndex]);
+            if (m_AgendaGenerated == true)
+            {
+                checkIfHoursAdditionHelped();
+            }
+        }
+
+        private void generateAndPrintWeekAgenda()
+        {
+            if (!m_AgendaGenerated)
+            {
+                r_RunPool.AssignWeekAgenda(r_RunPool.RegisteredStudents);
+            }
+
+            printWeekAgenda();
+            if (r_RunPool.ConflictedStudents.Count > 0)
+            {
+                getConflicts();
+            }
+
+            m_AgendaGenerated = true;
+        }
+
+        private void displayLessonsOfInstructor()
+        {
+            int index = 0;
+            Instructor chosenInstructor;
+
+            Console.Clear();
+            Console.WriteLine("Please choose an instructor to show his lessons:");
+            foreach (Instructor instructor in r_RunPool.InstructorsList)
+            {
+                Console.WriteLine(@"({0}) {1}", index + 1, instructor.InstructorName);
+                index++;
+            }
+
+            index = getNumber(1, r_RunPool.InstructorsList.Count);
+            Console.Clear();
+            chosenInstructor = r_RunPool.InstructorsList[index - 1];
+            printInstructorsLesson(chosenInstructor);
+            PressAnyKeyToConitnue();
+        }
+
+        private void displayParticipantsInLesson()
+        {
+            int index = 0, counter = 0, chosenDay = 0;
+            Lesson chosenLesson;
+
+            Console.Clear();
+            chosenDay = getDay();
+            Console.Clear();
+            Console.WriteLine("Please choose a lesson to show it's Participants:");
+            if (r_RunPool.WeekAgenda[chosenDay] == null) // There are no lessons that day
+            {
+                Console.Clear();
+                Console.WriteLine("There are no lessons on this day");
+                PressAnyKeyToConitnue();
+                return;
+            }
+
+            foreach (Lesson lesson in r_RunPool.WeekAgenda[chosenDay]) // display lesson in chosen day
+            {
+                Console.WriteLine(@"({0}) {1}, [{2} - {3}], {4}, {5}", index + 1, lesson.LessonDay,
+                                                                       lesson.HourToDisplay[0],
+                                                                       lesson.HourToDisplay[1],
+                                                                       lesson.LessonMode, lesson.SwimStyle);
+                index++;
+                counter++;
+            }
+
+            index = getNumber(1, counter); // choose one of the lessons
+            chosenLesson = r_RunPool.WeekAgenda[chosenDay][index - 1];
+            Console.Clear();
+            printParticipantsInLesson(chosenLesson);
         }
 
         private List<eSwimStyle> getSwimStyle()
@@ -162,26 +254,6 @@ namespace PoolPlanUI
             }
 
             return swimStyles;
-        }
-        
-
-        private void addAvailabilityToExistingInstructor()
-        {
-            int chosenInstructorIndex;
-
-            Console.WriteLine("Please Choose one of the following instructors:\n");
-            for (int i = 0; i < r_RunPool.InstructorsList.Count; i++)
-            {
-                Console.WriteLine(@"Press ({0}) for {1}", i + 1, r_RunPool.InstructorsList[i].InstructorName);
-            }
-
-            chosenInstructorIndex = getNumber(1, r_RunPool.InstructorsList.Count) - 1;
-            Console.Clear();
-            addDaysAndHours(r_RunPool.InstructorsList[chosenInstructorIndex]);
-            if (m_AgendaGenerated == true)
-            {
-                checkIfHoursAdditionHelped();
-            }
         }
 
         private void checkIfHoursAdditionHelped()
@@ -217,22 +289,6 @@ namespace PoolPlanUI
                 }
             }
             return success;
-        }
-
-        private void generateAndPrintWeekAgenda()
-        {
-            if (!m_AgendaGenerated)
-            {
-                r_RunPool.AssignWeekAgenda(r_RunPool.RegisteredStudents);
-            }
-
-            printWeekAgenda();
-            if (r_RunPool.ConflictedStudents.Count > 0)
-            {
-                getConflicts();
-            }
-
-            m_AgendaGenerated = true;
         }
 
         void displayLessonsOfStudent()
@@ -301,58 +357,7 @@ namespace PoolPlanUI
             }
         }
 
-        private void displayLessonsOfInstructor()
-        {
-            int index = 0;
-            Instructor chosenInstructor;
 
-            Console.Clear();
-            Console.WriteLine("Please choose an instructor to show his lessons:");
-            foreach (Instructor instructor in r_RunPool.InstructorsList)
-            {
-                Console.WriteLine(@"({0}) {1}", index + 1, instructor.InstructorName);
-                index++;
-            }
-
-            index = getNumber(1, r_RunPool.InstructorsList.Count);
-            Console.Clear();
-            chosenInstructor = r_RunPool.InstructorsList[index - 1];
-            printInstructorsLesson(chosenInstructor);
-            PressAnyKeyToConitnue();
-        }
-
-        private void displayParticipantsInLesson()
-        {
-            int index = 0, counter = 0, chosenDay = 0;
-            Lesson chosenLesson;
-
-            Console.Clear();
-            chosenDay = getDay();
-            Console.Clear();
-            Console.WriteLine("Please choose a lesson to show it's Participants:");
-            if (r_RunPool.WeekAgenda[chosenDay] == null) // There are no lessons that day
-            {
-                Console.Clear();
-                Console.WriteLine("There are no lessons on this day");
-                PressAnyKeyToConitnue();
-                return;
-            }
-
-            foreach (Lesson lesson in r_RunPool.WeekAgenda[chosenDay]) // display lesson in chosen day
-            {
-                Console.WriteLine(@"({0}) {1}, [{2} - {3}], {4}, {5}", index + 1, lesson.LessonDay,
-                                                                       lesson.HourToDisplay[0],
-                                                                       lesson.HourToDisplay[1],
-                                                                       lesson.LessonMode, lesson.SwimStyle);
-                index++;
-                counter++;
-            }
-
-            index = getNumber(1, counter); // choose one of the lessons
-            chosenLesson = r_RunPool.WeekAgenda[chosenDay][index - 1];
-            Console.Clear();
-            printParticipantsInLesson(chosenLesson);
-        }
 
         private void printParticipantsInLesson(Lesson i_ChosenLesson)
         {
@@ -363,7 +368,7 @@ namespace PoolPlanUI
             Console.WriteLine("Registered students:");
             foreach (Student currentStudent in i_ChosenLesson.RegisteredStudents) // print students in lesson
             {
-                Console.WriteLine(@"{0}, {1}", currentStudent.FirstName, currentStudent.LastName);
+                Console.WriteLine(@"{0} {1}", currentStudent.FirstName, currentStudent.LastName);
             }
 
             PressAnyKeyToConitnue();
@@ -412,7 +417,7 @@ namespace PoolPlanUI
             PressAnyKeyToConitnue();
         }
 
-        private bool theraAreConflicts(List<List<int>> i_Conflicts, int lessonMode)
+        private bool areThereConflicts(List<List<int>> i_Conflicts, int lessonMode)
         {
             foreach (int counter in i_Conflicts[lessonMode])
             {
@@ -462,7 +467,7 @@ namespace PoolPlanUI
             Console.ForegroundColor = ConsoleColor.White;
             for (int lessonMode = 0; lessonMode < 2; lessonMode++)
             {
-                if (!theraAreConflicts(i_Conflicts, lessonMode))
+                if (!areThereConflicts(i_Conflicts, lessonMode))
                 {
                     continue;
                 }
@@ -486,7 +491,6 @@ namespace PoolPlanUI
             }
             Console.WriteLine();
         }
-
 
         public void TryToDealWithConflicts(List<List<int>> i_Conflicts)
         {
@@ -582,12 +586,6 @@ namespace PoolPlanUI
                 }
             }
 
-        }
-
-        private void PressAnyKeyToConitnue() // utility fucntion
-        {
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey();
         }
 
         private void printLessonData(int i_Day, int i_Index, int i_ScreenHorizontalOffset, int i_Verticaloffset)
@@ -794,41 +792,156 @@ namespace PoolPlanUI
             return Enumerable.Repeat(default(int), r_RunPool.InstructorsList.Count).ToList();
         }
 
-        // For presentation only -- allows quick insertion of input
-
-        private void insertionByForce()
+        private void PressAnyKeyToConitnue() // utility fucntion
         {
-            int i = 0;
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+        }
+
+        /// <summary>
+        // For presentation only -- allows input insertion //
+        /// </summary>
+
+        private void TestingFunction1()
+        {
+            TestAddStudents1();
+            TestAddInstructors1();
+            Console.Clear();
+        }
+
+        public void TestAddStudents1()
+        {
+            int index = 0;
+            Random rand = new Random();
+            string[] names = System.IO.File.ReadAllLines(@"C:\Users\amirb\source\repos\Asgard's Pool\PoolPlanUI\Names.txt");
 
             List<eSwimStyle> swimStyle = new List<eSwimStyle>();
+            List<List<eLessonMode>> lessonModes = new List<List<eLessonMode>>();
+            List<eLessonMode> mode1 = new List<eLessonMode>();
+            List<eLessonMode> mode2 = new List<eLessonMode>();
+            List<eLessonMode> mode3 = new List<eLessonMode>();
+            List<eLessonMode> mode4 = new List<eLessonMode>();
+
             swimStyle.Add(eSwimStyle.Chest);
             swimStyle.Add(eSwimStyle.Butterfly);
             swimStyle.Add(eSwimStyle.Hatira);
-            List<List<eLessonMode>> lessonModes = new List<List<eLessonMode>>();
-            List<eLessonMode> lm1 = new List<eLessonMode>();
-            lm1.Add(eLessonMode.Private);
-            lm1.Add(eLessonMode.Group);
-            List<eLessonMode> lm2 = new List<eLessonMode>();
-            lm2.Add(eLessonMode.Private);
-            lm2.Add(eLessonMode.None);
-            List<eLessonMode> lm3 = new List<eLessonMode>();
-            lm3.Add(eLessonMode.Group);
-            lm3.Add(eLessonMode.None);
-            List<eLessonMode> lm4 = new List<eLessonMode>();
-            lm4.Add(eLessonMode.Group);
-            lm4.Add(eLessonMode.Private);
-            lessonModes.Add(lm1);
-            lessonModes.Add(lm2);
-            lessonModes.Add(lm3);
-            lessonModes.Add(lm4);
+            mode1.Add(eLessonMode.Private);
+            mode1.Add(eLessonMode.Group);
+            mode2.Add(eLessonMode.Private);
+            mode2.Add(eLessonMode.None);
+            mode3.Add(eLessonMode.Group);
+            mode3.Add(eLessonMode.None);
+            mode4.Add(eLessonMode.Group);
+            mode4.Add(eLessonMode.Private);
+            lessonModes.Add(mode1);
+            lessonModes.Add(mode2);
+            lessonModes.Add(mode3);
+            lessonModes.Add(mode4);
 
-            for (i = 0; i < 30; i++)
+            for (index = 0; index < 60; index += 2)
             {
-                string firstname = Console.ReadLine();
-                string lastName = Console.ReadLine();
-                r_RunPool.AddStudent(firstname, lastName, swimStyle[i % 3], lessonModes[i % 4]);
+                r_RunPool.AddStudent(names[index], names[index + 1], swimStyle[rand.Next() % 3], lessonModes[rand.Next() % 4]);
             }
+        }
+
+
+        public void TestAddInstructors1()
+        {
+            List<eSwimStyle> eSwimStylesYOTAM = new List<eSwimStyle>();
+            List<eSwimStyle> eSwimStylesYONY = new List<eSwimStyle>();
+            List<eSwimStyle> eSwimStylesJOHNNY = new List<eSwimStyle>();
+
+            // Creating swim styles
+            eSwimStylesYOTAM.Add(eSwimStyle.Chest);
+            eSwimStylesYOTAM.Add(eSwimStyle.Hatira);
+            eSwimStylesYOTAM.Add(eSwimStyle.Butterfly);
+            eSwimStylesYONY.Add(eSwimStyle.Chest);
+            eSwimStylesYONY.Add(eSwimStyle.Butterfly);
+            eSwimStylesJOHNNY.Add(eSwimStyle.Chest);
+            eSwimStylesJOHNNY.Add(eSwimStyle.Hatira);
+            eSwimStylesJOHNNY.Add(eSwimStyle.Butterfly);
+
+            // Adding instructors
+            r_RunPool.AddInstructorToStaff("Yotam", eSwimStylesYOTAM);
+            r_RunPool.AddInstructorToStaff("Yoni", eSwimStylesYONY);
+            r_RunPool.AddInstructorToStaff("Johnny", eSwimStylesJOHNNY);
+
+            // Adding constraints to instructors
+            r_RunPool.addAvailablityToInstructor("Yotam", eWeekDay.Monday, new TimeRange(1600, 2000));
+            r_RunPool.addAvailablityToInstructor("Yotam", eWeekDay.Thursday, new TimeRange(1600, 2000));
+            r_RunPool.addAvailablityToInstructor("Yoni", eWeekDay.Tuesday, new TimeRange(800, 1500));
+            r_RunPool.addAvailablityToInstructor("Yoni", eWeekDay.Wedensday, new TimeRange(800, 1500));
+            r_RunPool.addAvailablityToInstructor("Yoni", eWeekDay.Thursday, new TimeRange(800, 1500));
+            r_RunPool.addAvailablityToInstructor("Johnny", eWeekDay.Sunday, new TimeRange(1000, 1900));
+            r_RunPool.addAvailablityToInstructor("Johnny", eWeekDay.Tuesday, new TimeRange(1000, 1900));
+            r_RunPool.addAvailablityToInstructor("Johnny", eWeekDay.Thursday, new TimeRange(1000, 1900));
+        }
+
+
+        private void TestingFunction2()
+        {
+            TestAddStudents2();
+            TestAddInstructors2();
             Console.Clear();
+        }
+
+        private void TestAddStudents2()
+        {
+            int index = 0;
+            Random rand = new Random();
+            string[] names = System.IO.File.ReadAllLines(@"C:\Users\amirb\source\repos\Asgard's Pool\PoolPlanUI\Names.txt");
+
+            List<eSwimStyle> swimStyle = new List<eSwimStyle>();
+            List<List<eLessonMode>> lessonModes = new List<List<eLessonMode>>();
+            List<eLessonMode> mode1 = new List<eLessonMode>();
+            List<eLessonMode> mode2 = new List<eLessonMode>();
+            List<eLessonMode> mode3 = new List<eLessonMode>();
+            List<eLessonMode> mode4 = new List<eLessonMode>();
+
+            swimStyle.Add(eSwimStyle.Chest);
+            swimStyle.Add(eSwimStyle.Butterfly);
+            swimStyle.Add(eSwimStyle.Hatira);
+            mode1.Add(eLessonMode.Private);
+            mode1.Add(eLessonMode.Group);
+            mode2.Add(eLessonMode.Private);
+            mode2.Add(eLessonMode.None);
+            mode3.Add(eLessonMode.Group);
+            mode3.Add(eLessonMode.None);
+            mode4.Add(eLessonMode.Group);
+            mode4.Add(eLessonMode.Private);
+            lessonModes.Add(mode1);
+            lessonModes.Add(mode2);
+            lessonModes.Add(mode3);
+            lessonModes.Add(mode4);
+
+            for (index = 0; index < 60; index += 2)
+            {
+                r_RunPool.AddStudent(names[index], names[index + 1], swimStyle[rand.Next() % 3], lessonModes[rand.Next() % 4]);
+            }
+        }
+
+        private void TestAddInstructors2() // only Yotam and Yoni
+        {
+            List<eSwimStyle> eSwimStylesYOTAM = new List<eSwimStyle>();
+            List<eSwimStyle> eSwimStylesYONY = new List<eSwimStyle>();
+
+            // Creating swim styles
+            eSwimStylesYOTAM.Add(eSwimStyle.Chest);
+            eSwimStylesYOTAM.Add(eSwimStyle.Hatira);
+            eSwimStylesYOTAM.Add(eSwimStyle.Butterfly);
+            eSwimStylesYONY.Add(eSwimStyle.Chest);
+            eSwimStylesYONY.Add(eSwimStyle.Hatira);
+
+            // Adding instructors
+            r_RunPool.AddInstructorToStaff("Yotam", eSwimStylesYOTAM);
+            r_RunPool.AddInstructorToStaff("Yoni", eSwimStylesYONY);
+
+            // Adding constraints to instructors
+            r_RunPool.addAvailablityToInstructor("Yotam", eWeekDay.Monday, new TimeRange(1600, 1900));
+            r_RunPool.addAvailablityToInstructor("Yotam", eWeekDay.Thursday, new TimeRange(1600, 1900));
+            r_RunPool.addAvailablityToInstructor("Yoni", eWeekDay.Tuesday, new TimeRange(800, 1200));
+            r_RunPool.addAvailablityToInstructor("Yoni", eWeekDay.Wedensday, new TimeRange(800, 1200));
+            r_RunPool.addAvailablityToInstructor("Yoni", eWeekDay.Thursday, new TimeRange(800, 1200));
         }
     }
 }
