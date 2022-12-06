@@ -49,9 +49,9 @@
     <Compile Include="UserInterface.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PoolPlanLogic\PoolPlanLogic.csproj">
+    <ProjectReference Include="..\PoolPlanLogic\SchedulingLogic.csproj">
       <Project>{b62ad118-5947-4e70-ab26-dc936c5c27a4}</Project>
-      <Name>PoolPlanLogic</Name>
+      <Name>SchedulingLogic</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

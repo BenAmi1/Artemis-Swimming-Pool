@@ -813,7 +813,7 @@ namespace PoolPlanUI
 
         private string dataInsertionMethod()
         {
-            Console.WriteLine("Choose one of the following:\n(1) Test1\n" +
+            Console.WriteLine("Type one of the following:\n(1) Test1\n" +
                                                             "(2) Test2\n" +
                                                             "(3) Type anything to insert data manually");
             return Console.ReadLine();
