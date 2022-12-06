@@ -100,7 +100,7 @@ namespace PoolPlanLogic
                 lessonMode = eLessonMode.Private;
             }
 
-            lessonMode = eLessonMode.Group;
+            lessonMode = eLessonMode.Group; 
             for (int iteration = 1; iteration <= 2; iteration++)
             {
                 foreach (Student currentStudent in i_ListOfStudents)

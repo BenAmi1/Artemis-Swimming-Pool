@@ -15,16 +15,18 @@ namespace PoolPlanUI
         private const int k_CurserHorizontalOffset = 24;
         private bool m_AgendaGenerated = false;
 
-        public UserInterface(string i_Mode)
+        public UserInterface()
         {
             r_RunPool = new PoolManagement();
             r_AmountOfSwimStyles = Enum.GetNames(typeof(eSwimStyle)).Length;
             r_MenuOptionsSize = Enum.GetNames(typeof(eMenuOptions)).Length -2; // Except 'exit', 'unfefined'
-            if (i_Mode == "test1")
+            string dataInsertionMode = dataInsertionMethod();
+
+            if (dataInsertionMode == "Test1")
             {
                 TestingFunction1();
             }
-            else if(i_Mode == "test2")
+            else if(dataInsertionMode == "Test2")
             {
                 TestingFunction2();
             }
@@ -809,11 +811,19 @@ namespace PoolPlanUI
             Console.Clear();
         }
 
+        private string dataInsertionMethod()
+        {
+            Console.WriteLine("Choose one of the following:\n(1) Test1\n" +
+                                                            "(2) Test2\n" +
+                                                            "(3) Type anything to insert data manually");
+            return Console.ReadLine();
+        }
+
         public void TestAddStudents1()
         {
             int index = 0;
             Random rand = new Random();
-            string[] names = System.IO.File.ReadAllLines(@"C:\Users\amirb\source\repos\Asgard's Pool\PoolPlanUI\Names.txt");
+            string[] names = System.IO.File.ReadAllLines(@"C:\Users\amirb\source\repos\Asgard's Pool\PoolPlanUI\Test_Names.txt");
 
             List<eSwimStyle> swimStyle = new List<eSwimStyle>();
             List<List<eLessonMode>> lessonModes = new List<List<eLessonMode>>();
@@ -889,7 +899,7 @@ namespace PoolPlanUI
         {
             int index = 0;
             Random rand = new Random();
-            string[] names = System.IO.File.ReadAllLines(@"C:\Users\amirb\source\repos\Asgard's Pool\PoolPlanUI\Names.txt");
+            string[] names = System.IO.File.ReadAllLines(@"C:\Users\amirb\source\repos\Asgard's Pool\PoolPlanUI\Test_Names.txt");
 
             List<eSwimStyle> swimStyle = new List<eSwimStyle>();
             List<List<eLessonMode>> lessonModes = new List<List<eLessonMode>>();
