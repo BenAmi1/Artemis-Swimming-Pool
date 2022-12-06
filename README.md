@@ -41,7 +41,7 @@ The system including some other features alse, e.g: displaying lessons of specif
 
 Technology:
 1. .NET Framework, C#.
-1. 100%, Fully supperation between the logic and the user interface. The UI can be changes in a blink on an eye with another platform. No need to change
+1. 100%, Fully supperation between the logic and the user interface - two different projects. The UI can be changes in a blink on an eye with another platform. No need to change
 the logic project whatsoever!
 2. Extendability: The amount of students and instructors can be changed, also the amount of swimming lessons or the working days of the pool.
 3. Readability: emphasizing on a clean - readable, and maintainble code.
