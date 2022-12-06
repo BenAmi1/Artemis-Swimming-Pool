@@ -48,12 +48,15 @@ the logic project whatsoever!
 
 
 Schedule output
+
 ![image](https://user-images.githubusercontent.com/75504717/205940287-d5337c4c-9832-4e19-85ad-eeee16f7ab66.png)
 
 
 Conflicts
+
 ![image](https://user-images.githubusercontent.com/75504717/205933838-52804f0f-fb1c-4626-b29b-a37223056404.png)
 
 
 Reducing conflicts after adding availability to instructos
+
 ![image](https://user-images.githubusercontent.com/75504717/205935024-88694de6-cb0c-47cd-b6c5-43a7bb0e46a2.png)
