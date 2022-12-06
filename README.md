@@ -11,6 +11,8 @@ The schedule also considering the students constraints:
 2. Do they wish a private (45 minutes) lesson, or a group (60 minutes) lesson. The students also get to choose first and second priorities:
 if their first priority is not aviailable, the algorithm will try to allow them the socenod priority
 
+The system will assamble an efficiant schedule, taking into considirations all the constraints above, and will display a readble agenda for the upcoming week
+
 In case of conflicts or fully booked schedule, a pop-up will apear showing the unscheduleded-students.
 
 # Algorithms modus operandi:
@@ -27,7 +29,7 @@ The system allows to add students, instuctors and adding availablity to instucto
 and a pop-up will be apear accordingly.
 
 
-Manual:
+# Manual:
 The program will get an input: a list of X students and their constraints.
 The output can be inserted manually, or by a file (files are published in this repository "Test_Names.txt"): the student preferations will be
 automatically and randomlly setted.
@@ -36,18 +38,19 @@ in the next 2 methods:(Project: "SchedulingUI")
 void TestAddStudents1()
 void TestAddStudents2()
 
-Output:
+# Output:
 The assambled lessons schedule, for the instuctors and the students, divides by the week days
 The system including some other features alse, e.g: displaying lessons of specific student or instructor, adding students etc, availability etc...
 
-Technology:
+# Technology:
 1. .NET Framework, C#, Console applictaion
-1. 100%, Fully supperation between the logic and the user interface - two different projects. The UI can be changes in a blink on an eye with another platform. No need to change
+2. 100%, Fully supperation between the logic and the user interface - two different projects. The UI can be changes in a blink on an eye with another platform. No need to change
 the logic project whatsoever!
-2. Extendability: The amount of students and instructors can be changed, also the amount of swimming lessons or the working days of the pool.
-3. Readability: emphasizing on a clean - readable, and maintainble code.
+3. Extendability: The amount of students and instructors can be changed, also the amount of swimming lessons or the working days of the pool.
+4. Readability: emphasizing on a clean - readable, and maintainble code.
 
 
+# Demonstrations
 
 Schedule output:
 
