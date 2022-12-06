@@ -1,18 +1,19 @@
 # Artemis-Swimming-Pool
 Welcome to the olympic pool of Artemis!
 The following project is to assemble the most efficient weekly-schedule of a swimming pool.
+# Background:
 The schedule considering the swimming instructors constrains:
 1. Available working days
 2. Available working hours
-3. Speciallity: which swimming styles the instructor is quallified to instuct
+3. Speciallity: which swimming styles the instructor is quallified to instruct
 The schedule also considering the students constraints:
 1. Which swimming style they wish to learn
-2. Do they want private (45 minutes) lesson, or a group (60 minutes) lesson. The students also gets to choose first and second priorities:
+2. Do they wish a private (45 minutes) lesson, or a group (60 minutes) lesson. The students also get to choose first and second priorities:
 if their first priority is not aviailable, the algorithm will try to allow them the socenod priority
 
 In case of conflicts or fully booked schedule, a pop-up will apear showing the unscheduleded-students.
 
-Algorithms modus operandi:
+# Algorithms modus operandi:
 1. The algorithm will set first the group lessons, as it morally justified.
 If possible, the private lessong will be setted afterwards.
 2. The algorithms will first try to book the instructor whose already working that day as it is more profitable for the employer.
