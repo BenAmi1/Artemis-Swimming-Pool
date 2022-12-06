@@ -49,7 +49,9 @@ the logic project whatsoever!
 
 Conflicts
 ![image](https://user-images.githubusercontent.com/75504717/205933838-52804f0f-fb1c-4626-b29b-a37223056404.png)
-s
+
+
+
 Reducing conflicts after adding availability to instructos
 ![image](https://user-images.githubusercontent.com/75504717/205935024-88694de6-cb0c-47cd-b6c5-43a7bb0e46a2.png)
 
