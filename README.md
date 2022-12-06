@@ -40,23 +40,24 @@ The assambled lessons schedule, for the instuctors and the students, divides by 
 The system including some other features alse, e.g: displaying lessons of specific student or instructor, adding students etc, availability etc...
 
 Technology:
-1. .NET Framework, C#.
+1. .NET Framework, C#, Console applictaion
 1. 100%, Fully supperation between the logic and the user interface - two different projects. The UI can be changes in a blink on an eye with another platform. No need to change
 the logic project whatsoever!
 2. Extendability: The amount of students and instructors can be changed, also the amount of swimming lessons or the working days of the pool.
 3. Readability: emphasizing on a clean - readable, and maintainble code.
 
 
-Schedule output
+
+Schedule output:
 
 ![image](https://user-images.githubusercontent.com/75504717/205940287-d5337c4c-9832-4e19-85ad-eeee16f7ab66.png)
 
 
-Conflicts
+Conflicts:
 
 ![image](https://user-images.githubusercontent.com/75504717/205933838-52804f0f-fb1c-4626-b29b-a37223056404.png)
 
 
-Reducing conflicts after adding availability to instructos
+Reducing conflicts after adding availability to instructos:
 
 ![image](https://user-images.githubusercontent.com/75504717/205935024-88694de6-cb0c-47cd-b6c5-43a7bb0e46a2.png)
