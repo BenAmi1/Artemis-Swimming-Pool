@@ -42,7 +42,7 @@ namespace PoolPlanUI
             Console.WriteLine("Welcome to Asgard's Pool!\n");
             while (userInput != (int)eMenuOptions.Exit)
             {
-                Console.WriteLine("Please choose one of the following options:\n");
+                Console.WriteLine("Please choose one of the following options:\n ");
                 Console.WriteLine("press (1) to add new student to the pool");
                 Console.WriteLine("press (2) to add instructor to the staff");
                 Console.WriteLine("press (3) to add availability to existent instructor");
