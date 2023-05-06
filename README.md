@@ -5,7 +5,7 @@ The following project is to assemble the most efficient weekly-schedule of a swi
 The schedule considering the swimming instructors constrains:
 1. Available working days
 2. Available working hours
-3. Speciallity: which swimming styles the instructor is quallified to instruct
+3. Speciallity: which swimming styles the instructor is quallified to instruct.
 The schedule also considering the students constraints:
 1. Which swimming style they wish to learn
 2. Do they wish a private (45 minutes) lesson, or a group (60 minutes) lesson. The students also get to choose first and second priorities:
