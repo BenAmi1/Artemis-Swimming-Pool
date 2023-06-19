@@ -13,7 +13,7 @@ if their first priority is not aviailable, the algorithm will try to allow them 
 
 The system will assamble an efficiant schedule, taking into considirations all the constraints above, and will display a readble agenda for the upcoming week
 
-In case of conflicts or fully booked schedule, a pop-up will apear showing the unscheduleded-students.
+In case of conflicts or fully booked schedule, a pop-up will apear showing the unscheduled-students.
 
 # Algorithms modus operandi:
 1. The algorithm will set first the group lessons, as it morally justified.
