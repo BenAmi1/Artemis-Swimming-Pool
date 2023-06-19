@@ -11,7 +11,7 @@ The schedule also considering the students constraints:
 2. Do they wish a private (45 minutes) lesson, or a group (60 minutes) lesson. The students also get to choose first and second priorities:
 if their first priority is not aviailable, the algorithm will try to allow them the socenod priority
 
-The system will assamble an efficiant schedule, taking into considirations all the constraints above, and will display a readble agenda for the upcoming week
+The system will assemble an efficient schedule, taking into considerations all the constraints above, and will display a readable agenda for the upcoming week
 
 In case of conflicts or fully booked schedule, a pop-up will apear showing the unscheduled-students.
 
